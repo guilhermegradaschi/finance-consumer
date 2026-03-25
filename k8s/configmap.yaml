@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nf-processor-config
+  namespace: nf-processor
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  APP_NAME: "nf-processor"
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DB_DATABASE: "nf_processor"
+  DB_POOL_SIZE: "20"
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_IDEMPOTENCY_TTL: "86400"
+  RABBITMQ_HOST: "rabbitmq-service"
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_VHOST: "nf_processor"
+  RABBITMQ_PREFETCH: "10"
+  S3_REGION: "us-east-1"
+  S3_BUCKET: "nf-xmls"
+  S3_FORCE_PATH_STYLE: "false"
+  JWT_EXPIRES_IN: "1h"
+  THROTTLE_TTL: "60000"
+  THROTTLE_LIMIT: "100"
+  IMAP_ENABLED: "false"
+  SQS_ENABLED: "false"
+  LOG_LEVEL: "info"
