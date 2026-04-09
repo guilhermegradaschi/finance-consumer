@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RabbitMQService } from '../../infrastructure/rabbitmq/rabbitmq.service';
+import { NfProcessingLogRepository } from '../persistence/repositories/nf-processing-log.repository';
 import { ReceitaWsClient } from './clients/receita-ws.client';
 import { SefazClient } from './clients/sefaz.client';
 import { EXCHANGES, ROUTING_KEYS } from '../../common/constants/queues.constants';
@@ -12,6 +13,7 @@ export class BusinessValidatorService {
 
   constructor(
     private readonly rabbitMQService: RabbitMQService,
+    private readonly processingLogRepository: NfProcessingLogRepository,
     private readonly receitaWsClient: ReceitaWsClient,
     private readonly sefazClient: SefazClient,
   ) {}
@@ -54,6 +56,20 @@ export class BusinessValidatorService {
     );
 
     const duration = Date.now() - startTime;
+
+    await this.processingLogRepository.logProcessingStep({
+      chaveAcesso: event.chaveAcesso,
+      stage: 'BUSINESS_VALIDATE',
+      status: result.isValid ? 'SUCCESS' : 'WARNING',
+      durationMs: duration,
+      errorMessage: errors.length > 0 ? errors.join('; ') : undefined,
+      metadata: {
+        cnpjValid: cnpjResult.valid,
+        sefazValid: sefazResult.valid,
+        errors,
+      },
+    });
+
     this.logger.log(`Business validation for ${event.chaveAcesso}: ${result.isValid ? 'VALID' : 'INVALID'} in ${duration}ms`);
 
     return result;

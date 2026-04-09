@@ -92,7 +92,7 @@ export default config;
 ### 3.1 XML Válido
 
 ```typescript
-// test/fixtures/valid-nfe.xml
+// src/test/fixtures/valid-nfe.xml
 export const VALID_NFE_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
   <NFe>
@@ -247,7 +247,7 @@ import { RedisService } from '../../../infrastructure/redis/redis.service';
 import { RabbitMQService } from '../../../infrastructure/rabbitmq/rabbitmq.service';
 import { NfProcessingLogRepository } from '../../persistence/repositories/nf-processing-log.repository';
 import { NfSource } from '../../../common/enums/nf-source.enum';
-import { VALID_NFE_XML, VALID_CHAVE_ACESSO, INVALID_NFE_XML } from '../../../../test/fixtures/valid-nfe.xml';
+import { VALID_NFE_XML, VALID_CHAVE_ACESSO, INVALID_NFE_XML } from '../../../../src/test/fixtures/valid-nfe.xml';
 
 describe('NfReceiverService', () => {
   let service: NfReceiverService;
@@ -375,7 +375,7 @@ import { XmlProcessorService } from '../xml-processor.service';
 import { S3Service } from '../../../infrastructure/s3/s3.service';
 import { RabbitMQService } from '../../../infrastructure/rabbitmq/rabbitmq.service';
 import { NfProcessingLogRepository } from '../../persistence/repositories/nf-processing-log.repository';
-import { VALID_NFE_XML, VALID_CHAVE_ACESSO, INVALID_NFE_XML } from '../../../../test/fixtures/valid-nfe.xml';
+import { VALID_NFE_XML, VALID_CHAVE_ACESSO, INVALID_NFE_XML } from '../../../../src/test/fixtures/valid-nfe.xml';
 import { NonRetryableException } from '../../../common/exceptions/non-retryable.exception';
 import { RetryableException } from '../../../common/exceptions/retryable.exception';
 

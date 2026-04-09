@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NfController } from '../controllers/nf.controller';
+import { SubmitNfMultipartFieldsDto } from '../dto/submit-nf-multipart.dto';
 import { NfReceiverService } from '../../nf-receiver/nf-receiver.service';
 import { NotaFiscalRepository } from '../../persistence/repositories/nota-fiscal.repository';
 import { NfProcessingLogRepository } from '../../persistence/repositories/nf-processing-log.repository';
@@ -36,8 +37,32 @@ describe('NfController', () => {
       alreadyProcessed: false,
     });
 
-    const result = await controller.submit({ xmlContent: '<xml/>' });
+    const file = {
+      buffer: Buffer.from('<?xml version="1.0"?><root/>'),
+      originalname: 'nf.xml',
+    };
+
+    const result = await controller.submit(file, {});
     expect(result.status).toBe('RECEIVED');
+    expect(mockReceiver.receive).toHaveBeenCalledWith(
+      expect.objectContaining({ xmlContent: expect.stringContaining('<root/>') }),
+    );
+  });
+
+  it('should ignore Swagger-style metadataJson placeholder "undefined"', async () => {
+    mockReceiver.receive.mockResolvedValue({
+      chaveAcesso: '35240112345678000195550010000001231234567890',
+      idempotencyKey: 'key1',
+      status: 'RECEIVED',
+      alreadyProcessed: false,
+    });
+
+    const file = { buffer: Buffer.from('<xml/>'), originalname: 'nf.xml' };
+    const fields: SubmitNfMultipartFieldsDto = { metadataJson: 'undefined' };
+    await controller.submit(file, fields);
+    expect(mockReceiver.receive).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: undefined }),
+    );
   });
 
   it('should list NFs with pagination', async () => {

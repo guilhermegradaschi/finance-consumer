@@ -34,8 +34,7 @@ Replace host/port with your Service or Ingress URL.
 2. Secret present (no placeholder deploy): `kubectl get secret nf-processor-secrets -n nf-processor`
 3. Liveness: `curl -sSf "http://<svc-or-ingress>/health/live"`
 4. Readiness: `curl -sSf "http://<svc-or-ingress>/health/ready"` (503 if a dependency is down)
-5. Metrics: `curl -sSf "http://<svc-or-ingress>/metrics" | head`
-6. TLS (if using Ingress): `curl -sSf "https://<host>/health/live"`
+5. TLS (if using Ingress): `curl -sSf "https://<host>/health/live"`
 
 ## Example files (copy and customize)
 

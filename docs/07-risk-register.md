@@ -122,7 +122,7 @@ IMPACTO  ├─────────┼─────────┼──�
 | **Score** | 🟠 ALTO (6) |
 | **Arquivos Afetados** | `src/infrastructure/observability/` |
 | **Sinal de Alerta** | - Incidentes reportados por clientes antes de SRE<br>- MTTD (Mean Time To Detect) > 30 min<br>- Troubleshooting requer acesso direto a pods |
-| **Mitigação** | 1. Expor /metrics para Prometheus<br>2. Implementar OpenTelemetry<br>3. Configurar alertas para: error rate, latência P99, queue depth |
+| **Mitigação** | 1. Implementar OpenTelemetry<br>2. Configurar alertas para: error rate, latência P99, queue depth |
 | **Contingência** | Acesso manual via kubectl logs + describe |
 | **Owner** | SRE |
 | **Prazo** | 1 semana |

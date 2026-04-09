@@ -57,6 +57,7 @@ import { InvoiceEventsModule } from './modules/invoice-events/invoice-events.mod
 
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRES_IN: Joi.string().default('1h'),
+        AUTH_DISABLED: Joi.boolean().default(false),
 
         THROTTLE_TTL: Joi.number().default(60000),
         THROTTLE_LIMIT: Joi.number().default(100),
@@ -71,6 +72,9 @@ import { InvoiceEventsModule } from './modules/invoice-events/invoice-events.mod
         IMAP_ENABLED: Joi.boolean().default(false),
         IMAP_USERNAME: Joi.string().allow('').default(''),
         IMAP_PASSWORD: Joi.string().allow('').default(''),
+        IMAP_MOCK_ENABLED: Joi.boolean().default(false),
+        IMAP_MOCK_XML_PATH: Joi.string().allow('').default(''),
+        IMAP_MOCK_FIXTURE: Joi.string().allow('').default(''),
 
         SQS_ENABLED: Joi.boolean().default(false),
         LOG_LEVEL: Joi.string().default('debug'),

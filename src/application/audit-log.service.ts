@@ -7,8 +7,12 @@ export type AuditAction =
   | 'nf.summary'
   | 'nf.get'
   | 'nf.logs'
+  | 'nf.timeline'
+  | 'nf.audit'
+  | 'nf.audit.events'
   | 'nf.reprocess'
-  | 'auth.revoke';
+  | 'auth.revoke'
+  | 'auth.token';
 
 @Injectable()
 export class AuditLogService {

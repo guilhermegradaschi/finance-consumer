@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NfReceiverService } from '../nf-receiver.service';
 import { IdempotencyService } from '../../../infrastructure/redis/idempotency.service';
 import { RabbitMQService } from '../../../infrastructure/rabbitmq/rabbitmq.service';
+import { NfProcessingLogRepository } from '../../persistence/repositories/nf-processing-log.repository';
 import { NfSource } from '../../../common/enums/nf-source.enum';
 import { NonRetryableException } from '../../../common/exceptions/non-retryable.exception';
 
@@ -9,17 +10,20 @@ describe('NfReceiverService', () => {
   let service: NfReceiverService;
   const mockIdempotencyService = { check: jest.fn(), register: jest.fn() };
   const mockRabbitMQService = { publish: jest.fn() };
+  const mockProcessingLogRepository = { logProcessingStep: jest.fn() };
 
   const validXml = '<infNFe Id="NFe35240112345678000195550010000001231234567890" versao="4.00"><nNF>123</nNF></infNFe>';
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    mockProcessingLogRepository.logProcessingStep.mockResolvedValue({});
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NfReceiverService,
         { provide: IdempotencyService, useValue: mockIdempotencyService },
         { provide: RabbitMQService, useValue: mockRabbitMQService },
+        { provide: NfProcessingLogRepository, useValue: mockProcessingLogRepository },
       ],
     }).compile();
 
@@ -52,11 +56,27 @@ describe('NfReceiverService', () => {
     expect(mockRabbitMQService.publish).not.toHaveBeenCalled();
   });
 
-  it('should throw NonRetryableException for invalid XML without chaveAcesso', async () => {
+  it('should throw NonRetryableException for invalid XML and log REJECTED', async () => {
     await expect(service.receive({ xmlContent: '<invalid/>' })).rejects.toThrow(NonRetryableException);
+
+    expect(mockProcessingLogRepository.logProcessingStep).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stage: 'RECEIVE',
+        status: 'REJECTED',
+        errorCode: 'NF003',
+      }),
+    );
   });
 
-  it('should throw NonRetryableException for empty XML', async () => {
+  it('should throw NonRetryableException for empty XML and log REJECTED', async () => {
     await expect(service.receive({ xmlContent: '' })).rejects.toThrow(NonRetryableException);
+
+    expect(mockProcessingLogRepository.logProcessingStep).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stage: 'RECEIVE',
+        status: 'REJECTED',
+        errorCode: 'NF003',
+      }),
+    );
   });
 });

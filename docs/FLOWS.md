@@ -308,7 +308,6 @@ async monitorDlqs(): Promise<void> {
     const count = await this.rabbitMQService.getQueueMessageCount(dlq);
     if (count > 0) {
       this.logger.warn(`DLQ ${dlq} has ${count} messages`);
-      this.metricsService.recordDlqSize(dlq, count);
     }
   }
 }
