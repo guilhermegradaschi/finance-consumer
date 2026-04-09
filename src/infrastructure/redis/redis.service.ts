@@ -71,4 +71,18 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     const result = await this.client.expire(key, ttlSeconds);
     return result === 1;
   }
+
+  async slidingWindowHit(key: string, windowMs: number, max: number): Promise<{ allowed: boolean }> {
+    const now = Date.now();
+    const windowStart = now - windowMs;
+    await this.client.zremrangebyscore(key, 0, windowStart);
+    const count = await this.client.zcard(key);
+    if (count >= max) {
+      return { allowed: false };
+    }
+    const member = `${now}:${Math.random().toString(36).slice(2, 11)}`;
+    await this.client.zadd(key, now, member);
+    await this.client.pexpire(key, windowMs + 1000);
+    return { allowed: true };
+  }
 }

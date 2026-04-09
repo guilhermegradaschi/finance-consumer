@@ -1,6 +1,6 @@
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { resourceFromAttributes } from '@opentelemetry/resources';
+import { Resource } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 
@@ -17,9 +17,11 @@ export function initTracing(): void {
   const serviceName = process.env.OTEL_SERVICE_NAME ?? process.env.APP_NAME ?? 'finance-consumer';
 
   sdk = new NodeSDK({
-    resource: resourceFromAttributes({
-      [ATTR_SERVICE_NAME]: serviceName,
-    }),
+    resource: Resource.default().merge(
+      new Resource({
+        [ATTR_SERVICE_NAME]: serviceName,
+      }),
+    ),
     traceExporter: new OTLPTraceExporter(),
     instrumentations: [
       getNodeAutoInstrumentations({
