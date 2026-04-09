@@ -40,3 +40,5 @@ export const RETRY_CONFIG = {
   INITIAL_DELAY_MS: 1000,
   MULTIPLIER: 4,
 } as const;
+
+export type PipelineStage = 'xml' | 'business' | 'persistence' | 'notify';

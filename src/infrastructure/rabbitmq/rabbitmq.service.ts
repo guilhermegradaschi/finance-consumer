@@ -11,6 +11,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private connection!: AmqpConnection;
   private channel!: AmqpChannel;
   private connected = false;
+  private readonly consumerTags: string[] = [];
   private readonly logger = new Logger(RabbitMQService.name);
 
   constructor(private readonly configService: ConfigService) {}
@@ -150,6 +151,31 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('RabbitMQ topology setup complete');
   }
 
+  async verifyTopology(): Promise<void> {
+    if (!this.connected || !this.channel) {
+      throw new Error('RabbitMQ is not connected');
+    }
+    await this.setupTopology();
+  }
+
+  async drainConsumers(timeoutMs: number): Promise<void> {
+    if (!this.channel) {
+      return;
+    }
+    const tags = [...this.consumerTags];
+    this.consumerTags.length = 0;
+    for (const tag of tags) {
+      try {
+        await this.channel.cancel(tag);
+      } catch (err) {
+        this.logger.warn(`Failed to cancel consumer ${tag}: ${(err as Error).message}`);
+      }
+    }
+    if (timeoutMs > 0) {
+      await new Promise<void>((resolve) => setTimeout(resolve, timeoutMs));
+    }
+  }
+
   private ensureChannel(): AmqpChannel {
     if (!this.channel) {
       throw new Error('RabbitMQ channel is not available. Is RabbitMQ running?');
@@ -198,7 +224,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   async consume(
     queue: string,
     handler: (msg: Record<string, unknown>, raw: amqplib.ConsumeMessage) => Promise<void>,
-    options?: { retryRoutingKey?: string; dlqRoutingKey?: string },
+    options?: { retryRoutingKey?: string; dlqRoutingKey?: string; pipelineStage?: string },
   ): Promise<void> {
     if (!this.connected || !this.channel) {
       this.logger.warn(`Skipping consumer registration for queue "${queue}" — RabbitMQ is not connected`);
@@ -206,7 +232,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     }
 
     const ch = this.channel;
-    await ch.consume(queue, async (msg) => {
+    const { consumerTag } = await ch.consume(queue, async (msg) => {
       if (!msg) return;
 
       try {
@@ -229,6 +255,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
         }
       }
     });
+    this.consumerTags.push(consumerTag);
 
     this.logger.log(`Consuming from queue: ${queue}`);
   }

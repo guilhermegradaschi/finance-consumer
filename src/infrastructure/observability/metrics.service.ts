@@ -88,4 +88,41 @@ export class MetricsService {
   recordProcessingDuration(stage: string, durationMs: number): void {
     this.recordHistogram('nf.processing.duration_ms', durationMs, { stage });
   }
+
+  getRegistry(): { contentType: string } {
+    return { contentType: 'text/plain; version=0.0.4; charset=utf-8' };
+  }
+
+  async getPrometheusText(): Promise<string> {
+    const lines: string[] = [];
+    for (const c of this.counters.values()) {
+      const name = this.toPrometheusName(c.name);
+      lines.push(`# HELP ${name} ${c.name}`);
+      lines.push(`# TYPE ${name} counter`);
+      lines.push(`${name}${this.formatPrometheusLabels(c.labels)} ${c.value}`);
+    }
+    for (const h of this.histograms.values()) {
+      const sum = h.values.reduce((a, b) => a + b, 0);
+      const count = h.values.length;
+      const base = this.toPrometheusName(h.name);
+      lines.push(`# HELP ${base} ${h.name}`);
+      lines.push(`# TYPE ${base} untyped`);
+      lines.push(`${base}_sum${this.formatPrometheusLabels(h.labels)} ${sum}`);
+      lines.push(`${base}_count${this.formatPrometheusLabels(h.labels)} ${count}`);
+    }
+    return `${lines.join('\n')}\n`;
+  }
+
+  private toPrometheusName(name: string): string {
+    return name.replace(/\./g, '_');
+  }
+
+  private formatPrometheusLabels(labels: Record<string, string>): string {
+    const entries = Object.entries(labels);
+    if (entries.length === 0) {
+      return '';
+    }
+    const inner = entries.map(([k, v]) => `${k}="${String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`).join(',');
+    return `{${inner}}`;
+  }
 }

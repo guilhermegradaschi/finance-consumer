@@ -29,7 +29,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       const exResponse = exception.getResponse();
       message = typeof exResponse === 'string' ? exResponse : (exResponse as Record<string, string>).message ?? exception.message;
     } else if (exception instanceof BaseException) {
-      status = HttpStatus.INTERNAL_SERVER_ERROR;
+      status =
+        exception.code === 'NF404' ? HttpStatus.NOT_FOUND : HttpStatus.INTERNAL_SERVER_ERROR;
       message = exception.message;
       code = exception.code;
     } else if (exception instanceof Error) {
