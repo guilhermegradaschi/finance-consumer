@@ -229,55 +229,6 @@ Critério de Aceite:
 Complexidade: S
 ```
 
-### TASK-103: Implementar MetricsService
-
-```yaml
-ID: TASK-103
-Título: Criar serviço de métricas com prom-client
-Objetivo: Expor métricas no formato Prometheus
-Contexto: |
-  Métricas são essenciais para observabilidade. prom-client é o padrão
-  para Node.js. Métricas devem incluir: NF-e processadas, erros, latência,
-  e métricas default do Node.js.
-Arquivos-Alvo:
-  - src/infrastructure/observability/metrics.service.ts (criar)
-  - src/infrastructure/observability/metrics.module.ts (criar)
-  - src/infrastructure/observability/metrics.constants.ts (criar nomes de métricas)
-  - test/infrastructure/observability/metrics.service.spec.ts (criar)
-Dependências: Nenhuma
-Critério de Aceite:
-  - [ ] Counter: nf_received_total (labels: source, status)
-  - [ ] Counter: nf_processed_total (labels: stage, status)
-  - [ ] Counter: nf_errors_total (labels: stage, error_type, retryable)
-  - [ ] Histogram: nf_processing_duration_seconds (labels: stage)
-  - [ ] Histogram: http_request_duration_seconds (labels: method, route, status)
-  - [ ] Gauge: rabbitmq_queue_depth (labels: queue)
-  - [ ] Default metrics do Node.js (heap, CPU, event loop)
-  - [ ] getMetrics() retorna string no formato Prometheus
-Complexidade: M
-```
-
-### TASK-104: Criar MetricsController
-
-```yaml
-ID: TASK-104
-Título: Expor endpoint /metrics para Prometheus
-Objetivo: Prometheus pode scrapar métricas do serviço
-Contexto: |
-  O endpoint /metrics deve retornar todas as métricas no formato texto
-  que Prometheus entende. Não deve requerer autenticação.
-Arquivos-Alvo:
-  - src/modules/api-gateway/controllers/metrics.controller.ts (criar)
-  - src/modules/api-gateway/api-gateway.module.ts (registrar controller)
-Dependências: TASK-103
-Critério de Aceite:
-  - [ ] GET /metrics retorna Content-Type: text/plain
-  - [ ] Response contém todas as métricas do MetricsService
-  - [ ] Endpoint não requer autenticação
-  - [ ] Response time < 100ms
-Complexidade: S
-```
-
 ### TASK-105: Criar PodDisruptionBudget
 
 ```yaml
@@ -364,10 +315,8 @@ Contexto: |
   têm ~80 linhas idênticas cada para retry/DLQ. BaseConsumer abstrato
   centraliza essa lógica.
 Arquivos-Alvo:
-  - src/infrastructure/rabbitmq/base-consumer.ts (criar)
   - src/infrastructure/rabbitmq/interfaces/consumer.interface.ts (criar)
   - src/infrastructure/rabbitmq/decorators/consumer.decorator.ts (criar - opcional)
-  - test/infrastructure/rabbitmq/base-consumer.spec.ts (criar)
 Dependências: TASK-106, TASK-107
 Critério de Aceite:
   - [ ] BaseConsumer<T> é classe abstrata genérica
@@ -617,7 +566,7 @@ Contexto: |
   XMLs inválidos passam pelo pipeline e causam erros downstream.
   Validação XSD garante estrutura correta antes do parse.
 Arquivos-Alvo:
-  - schemas/nfe_v4.00.xsd (adicionar)
+  - src/schemas/nfe_v4.00.xsd (adicionar)
   - schemas/tipos_basicos_v4.00.xsd (adicionar)
   - src/modules/xml-processor/validators/xsd.validator.ts (criar)
   - src/modules/xml-processor/xml-processor.service.ts (integrar)
@@ -698,8 +647,6 @@ Complexidade: L
 | TASK-006 | Implementar Validação de Env Vars | 0 | M | TASK-001 |
 | TASK-101 | Criar HealthService | 1 | M | - |
 | TASK-102 | Refatorar HealthController | 1 | S | TASK-101 |
-| TASK-103 | Implementar MetricsService | 1 | M | - |
-| TASK-104 | Criar MetricsController | 1 | S | TASK-103 |
 | TASK-105 | Criar PodDisruptionBudget | 1 | S | - |
 | TASK-106 | Implementar Structured Logging | 1 | M | - |
 | TASK-107 | Adicionar Correlation ID | 1 | M | TASK-106 |

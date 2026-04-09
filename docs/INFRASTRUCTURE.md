@@ -609,102 +609,7 @@ export class AppLoggerService implements NestLoggerService {
 }
 ```
 
-### 5.3 Metrics Service
-
-```typescript
-// src/infrastructure/observability/metrics.service.ts
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { metrics } from '@opentelemetry/api';
-import type { Counter, Histogram, Meter } from '@opentelemetry/api';
-
-@Injectable()
-export class MetricsService implements OnModuleInit {
-  private meter: Meter;
-
-  // Counters
-  private nfReceivedCounter: Counter;
-  private nfProcessedCounter: Counter;
-  private nfValidatedCounter: Counter;
-  private nfPersistedCounter: Counter;
-  private nfErrorCounter: Counter;
-  private nfRetryCounter: Counter;
-  private nfDlqCounter: Counter;
-
-  // Histograms
-  private processingDurationHistogram: Histogram;
-
-  onModuleInit(): void {
-    this.meter = metrics.getMeter('nf-processor');
-
-    this.nfReceivedCounter = this.meter.createCounter('nf.received.total', {
-      description: 'Total de NF-es recebidas',
-    });
-
-    this.nfProcessedCounter = this.meter.createCounter('nf.processed.total', {
-      description: 'Total de NF-es processadas (XML)',
-    });
-
-    this.nfValidatedCounter = this.meter.createCounter('nf.validated.total', {
-      description: 'Total de NF-es validadas',
-    });
-
-    this.nfPersistedCounter = this.meter.createCounter('nf.persisted.total', {
-      description: 'Total de NF-es persistidas',
-    });
-
-    this.nfErrorCounter = this.meter.createCounter('nf.error.total', {
-      description: 'Total de erros de processamento',
-    });
-
-    this.nfRetryCounter = this.meter.createCounter('nf.retry.total', {
-      description: 'Total de retries',
-    });
-
-    this.nfDlqCounter = this.meter.createCounter('nf.dlq.total', {
-      description: 'Total de mensagens enviadas para DLQ',
-    });
-
-    this.processingDurationHistogram = this.meter.createHistogram('nf.processing.duration_ms', {
-      description: 'Duração do processamento por estágio',
-      unit: 'ms',
-    });
-  }
-
-  incrementReceived(source: string): void {
-    this.nfReceivedCounter.add(1, { source });
-  }
-
-  incrementProcessed(): void {
-    this.nfProcessedCounter.add(1);
-  }
-
-  incrementValidated(passed: boolean): void {
-    this.nfValidatedCounter.add(1, { passed: String(passed) });
-  }
-
-  incrementPersisted(): void {
-    this.nfPersistedCounter.add(1);
-  }
-
-  incrementError(stage: string, errorCode: string): void {
-    this.nfErrorCounter.add(1, { stage, errorCode });
-  }
-
-  incrementRetry(stage: string): void {
-    this.nfRetryCounter.add(1, { stage });
-  }
-
-  incrementDlq(stage: string): void {
-    this.nfDlqCounter.add(1, { stage });
-  }
-
-  recordProcessingDuration(stage: string, durationMs: number): void {
-    this.processingDurationHistogram.record(durationMs, { stage });
-  }
-}
-```
-
-### 5.4 Logging Interceptor
+### 5.3 Logging Interceptor
 
 ```typescript
 // src/common/interceptors/logging.interceptor.ts
@@ -716,13 +621,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
-import { MetricsService } from '../../infrastructure/observability/metrics.service';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger('HTTP');
-
-  constructor(private readonly metricsService: MetricsService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest();
@@ -748,18 +650,17 @@ export class LoggingInterceptor implements NestInterceptor {
 }
 ```
 
-### 5.5 Observability Module
+### 5.4 Observability Module
 
 ```typescript
 // src/infrastructure/observability/observability.module.ts
 import { Module, Global } from '@nestjs/common';
 import { AppLoggerService } from './logger.service';
-import { MetricsService } from './metrics.service';
 
 @Global()
 @Module({
-  providers: [AppLoggerService, MetricsService],
-  exports: [AppLoggerService, MetricsService],
+  providers: [AppLoggerService],
+  exports: [AppLoggerService],
 })
 export class ObservabilityModule {}
 ```

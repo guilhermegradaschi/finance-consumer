@@ -12,7 +12,6 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { MetricsService } from './infrastructure/observability/metrics.service';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -36,8 +35,7 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter());
 
   // Logging interceptor global
-  const metricsService = app.get(MetricsService);
-  app.useGlobalInterceptors(new LoggingInterceptor(metricsService));
+  app.useGlobalInterceptors(new LoggingInterceptor());
 
   // CORS
   app.enableCors({
@@ -246,13 +244,12 @@ async getStats() {
 
 ---
 
-## 5. Consumer RabbitMQ Completo (com métricas)
+## 5. Consumer RabbitMQ Completo
 
 ```typescript
-// Exemplo de consumer com métricas e tracing integrados
+// Exemplo de consumer com tracing integrado
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { RabbitMQService } from '../../infrastructure/rabbitmq/rabbitmq.service';
-import { MetricsService } from '../../infrastructure/observability/metrics.service';
 import { XmlProcessorService } from './xml-processor.service';
 import { QUEUES, PREFETCH_COUNTS } from '../../common/constants/queues.constants';
 import { NonRetryableException } from '../../common/exceptions/non-retryable.exception';
@@ -264,7 +261,6 @@ export class XmlProcessorConsumer implements OnModuleInit {
   constructor(
     private readonly rabbitMQService: RabbitMQService,
     private readonly xmlProcessorService: XmlProcessorService,
-    private readonly metricsService: MetricsService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -283,22 +279,16 @@ export class XmlProcessorConsumer implements OnModuleInit {
           await this.xmlProcessorService.process(content);
 
           const duration = Date.now() - startTime;
-          this.metricsService.incrementProcessed();
-          this.metricsService.recordProcessingDuration('XML_PROCESS', duration);
 
           this.logger.log(
             `[XML_PROCESS] Success: chaveAcesso=${chaveAcesso}, duration=${duration}ms`,
           );
         } catch (error) {
-          const duration = Date.now() - startTime;
-          this.metricsService.incrementError('XML_PROCESS', (error as any).errorCode || 'UNKNOWN');
-
           if (error instanceof NonRetryableException) {
             this.logger.error(
               `[XML_PROCESS] Non-retryable error: ${error.errorCode} — ${error.message}`,
             );
           } else {
-            this.metricsService.incrementRetry('XML_PROCESS');
             this.logger.warn(
               `[XML_PROCESS] Retryable error: ${(error as Error).message}, attempt=${attemptNumber}`,
             );
@@ -421,46 +411,7 @@ export class RolesGuard implements CanActivate {
 
 ---
 
-## 8. Metrics Interceptor
-
-```typescript
-// src/common/interceptors/metrics.interceptor.ts
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
-import { Observable, tap } from 'rxjs';
-import { MetricsService } from '../../infrastructure/observability/metrics.service';
-
-@Injectable()
-export class MetricsInterceptor implements NestInterceptor {
-  constructor(private readonly metricsService: MetricsService) {}
-
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const startTime = Date.now();
-    const req = context.switchToHttp().getRequest();
-
-    return next.handle().pipe(
-      tap({
-        next: () => {
-          const duration = Date.now() - startTime;
-          this.metricsService.recordProcessingDuration(`http_${req.method}_${req.route?.path}`, duration);
-        },
-        error: () => {
-          const duration = Date.now() - startTime;
-          this.metricsService.recordProcessingDuration(`http_${req.method}_${req.route?.path}_error`, duration);
-        },
-      }),
-    );
-  }
-}
-```
-
----
-
-## 9. Exception Filter Completo
+## 8. Exception Filter Completo
 
 ```typescript
 // src/common/filters/global-exception.filter.ts
@@ -527,12 +478,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
 ---
 
-## 10. Teste Unitário Completo
+## 9. Teste Unitário Completo
 
 ```typescript
 // src/common/utils/__tests__/xml.util.spec.ts
 import { extractChaveAcessoFromXml } from '../xml.util';
-import { VALID_NFE_XML } from '../../../../test/fixtures/valid-nfe.xml';
+import { VALID_NFE_XML } from '../../../../src/test/fixtures/valid-nfe.xml';
 
 describe('extractChaveAcessoFromXml', () => {
   it('deve extrair chaveAcesso do atributo Id da tag infNFe', () => {
@@ -571,7 +522,7 @@ describe('extractChaveAcessoFromXml', () => {
 
 ---
 
-## 11. Teste de Integração com Redis
+## 10. Teste de Integração com Redis
 
 ```typescript
 // test/integration/redis-idempotency.spec.ts

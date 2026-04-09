@@ -5,12 +5,8 @@ coverage
 *.md
 docker-compose*
 docs
-grafana
-prometheus
-schemas
-scripts
-tasks
-test
+src/test
+src/schemas
 k8s
 .github
 .vscode

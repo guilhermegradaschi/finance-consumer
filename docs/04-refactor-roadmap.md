@@ -30,8 +30,8 @@ Este roadmap organiza as refatorações em fases incrementais, considerando depe
 │  │  FIXES  │──│   & OBS   │──│  & TESTS   │──│   & INT   │──│  & DOCS  │  │
 │  └─────────┘  └───────────┘  └────────────┘  └───────────┘  └──────────┘  │
 │                                                                             │
-│  • Secrets    • Health      • BaseConsumer   • SEFAZ real   • E2E tests   │
-│  • JWT fix    • Metrics     • Exceptions     • XSD valid    • Perf tuning │
+│  • Secrets    • Health      • Consumers      • SEFAZ real   • E2E tests   │
+│  • JWT fix    • PDB/HPA     • Exceptions     • XSD valid    • Perf tuning │
 │  • CORS       • Tracing     • Type safety    • Email stub   • Docs        │
 │  • TLS        • Logging     • Decimal.js     • Rate limit   • Runbooks    │
 │                                                                             │
@@ -88,14 +88,12 @@ Estabelecer base sólida de infraestrutura e observabilidade.
 ### Dependências
 - FASE 0 completa
 
-### Sprint 1.1 - Health & Metrics
+### Sprint 1.1 - Health e plataforma K8s
 
 | ID | Tarefa | Arquivos | Esforço | Impacto |
 |----|--------|----------|---------|---------|
 | 1.1 | Criar HealthService com checks reais | `src/infrastructure/health/health.service.ts` | M | 🔴 Crítico |
 | 1.2 | Refatorar HealthController | `src/modules/api-gateway/controllers/health.controller.ts` | S | 🔴 Crítico |
-| 1.3 | Implementar MetricsService (prom-client) | `src/infrastructure/observability/metrics.service.ts` | M | 🟠 Alto |
-| 1.4 | Criar MetricsController (/metrics) | `src/modules/api-gateway/controllers/metrics.controller.ts` | S | 🟠 Alto |
 | 1.5 | Adicionar PodDisruptionBudget | `k8s/pdb.yaml` | S | 🟠 Alto |
 | 1.6 | Melhorar HPA com memory metrics | `k8s/hpa.yaml` | S | 🟡 Médio |
 
@@ -107,14 +105,11 @@ Estabelecer base sólida de infraestrutura e observabilidade.
 | 1.8 | Adicionar correlation ID em todas as camadas | Todos os services | M | 🟠 Alto |
 | 1.9 | Configurar OpenTelemetry SDK | `src/infrastructure/observability/tracing.ts` | M | 🟡 Médio |
 | 1.10 | Instrumentar HTTP clients | `src/modules/business-validator/clients/` | S | 🟡 Médio |
-| 1.11 | Criar Grafana dashboards básicos | `grafana/dashboards/` | M | 🟡 Médio |
-| 1.12 | Configurar alertas críticos | `prometheus/alerts/` | M | 🟠 Alto |
 
 ### Definição de Pronto
 - [ ] /health/ready retorna 503 se qualquer dep está down
-- [ ] /metrics expõe métricas Prometheus
 - [ ] Todos os logs têm correlationId
-- [ ] Traces visíveis no Grafana/Tempo
+- [ ] Traces visíveis no Tempo
 - [ ] Alertas disparam para: DB down, queue stuck, error rate > 5%
 
 ### Ordem de Execução
@@ -124,15 +119,9 @@ graph TD
     A[1.1 HealthService] --> B[1.2 HealthController]
     B --> C[1.5 PDB]
     
-    D[1.3 MetricsService] --> E[1.4 MetricsController]
-    E --> F[1.11 Dashboards]
-    
     G[1.7 Structured Logging] --> H[1.8 Correlation ID]
     H --> I[1.9 OTEL SDK]
     I --> J[1.10 HTTP instrumentation]
-    
-    F --> K[1.12 Alertas]
-    J --> K
 ```
 
 ---
@@ -149,7 +138,6 @@ Eliminar duplicação, melhorar type safety, aumentar cobertura.
 
 | ID | Tarefa | Arquivos | Esforço | Impacto |
 |----|--------|----------|---------|---------|
-| 2.1 | Criar BaseConsumer abstrato | `src/infrastructure/rabbitmq/base-consumer.ts` | L | 🟠 Alto |
 | 2.2 | Migrar XmlProcessorConsumer | `src/modules/xml-processor/consumers/` | M | 🟡 Médio |
 | 2.3 | Migrar BusinessValidatorConsumer | `src/modules/business-validator/consumers/` | M | 🟡 Médio |
 | 2.4 | Migrar PersistenceConsumer | `src/modules/persistence/consumers/` | M | 🟡 Médio |
@@ -178,9 +166,9 @@ Eliminar duplicação, melhorar type safety, aumentar cobertura.
 
 ```mermaid
 graph TD
-    A[2.1 BaseConsumer] --> B[2.2 XmlProcessor]
-    A --> C[2.3 BusinessValidator]
-    A --> D[2.4 Persistence]
+    B[2.2 XmlProcessor]
+    C[2.3 BusinessValidator]
+    D[2.4 Persistence]
     
     E[2.5 CircuitBreakerFactory] --> F[2.6 HTTP Clients]
     
@@ -313,7 +301,7 @@ Finalizar testes E2E, performance, documentação.
    O       │ 4.4 Pools  │ 1.1 Health │
    R       │            │ 2.5 CB     │
    Ç       ├────────────┼────────────┤
-   O       │ 3.14 UseCas│ 2.1 BaseCon│
+   O       │ 3.14 UseCas│ 2.2 XmlPr  │
            │ 3.15 Domain│ 2.7 Decimal│
      Alto  │ 4.10 ADRs  │ 3.2 SEFAZ  │
            │            │ 3.7 XSD    │
@@ -336,12 +324,11 @@ graph TD
     
     subgraph "FASE 1 - Foundation"
         D[Health Checks]
-        E[Metrics]
-        F[Tracing]
+        E[Logging e tracing]
     end
     
     subgraph "FASE 2 - Code Quality"
-        G[BaseConsumer]
+        G[Consumers]
         H[Exceptions]
         I[Type Safety]
     end
@@ -425,7 +412,7 @@ Assumindo sprints de 2 semanas: **~5 meses** para execução completa.
 | Mês | Semanas | Fase | Foco |
 |-----|---------|------|------|
 | 1 | 1-2 | 0 | Security fixes |
-| 1 | 3-4 | 1.1 | Health & Metrics |
+| 1 | 3-4 | 1.1 | Health & K8s |
 | 2 | 5-6 | 1.2 | Logging & Tracing |
 | 2 | 7-8 | 2.1 | Consumer Refactoring |
 | 3 | 9-10 | 2.2 | Type Safety & Exceptions |

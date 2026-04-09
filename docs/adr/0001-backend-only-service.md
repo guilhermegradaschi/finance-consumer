@@ -14,5 +14,5 @@ The service is **backend-only**. No frontend application will live in this repos
 
 ## Consequences
 
-- Documentation and operational focus remain on APIs, queues, and observability endpoints (`/health`, `/metrics`).
+- Documentation and operational focus remain on APIs, queues, and observability endpoints (`/health`).
 - Authentication is JWT-based for API access; there is no session/cookie-oriented SPA in this repo.

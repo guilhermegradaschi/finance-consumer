@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { S3Service } from '../../infrastructure/s3/s3.service';
 import { RabbitMQService } from '../../infrastructure/rabbitmq/rabbitmq.service';
+import { NfProcessingLogRepository } from '../persistence/repositories/nf-processing-log.repository';
 import { NonRetryableException } from '../../common/exceptions/non-retryable.exception';
 import { RetryableException } from '../../common/exceptions/retryable.exception';
 import { EXCHANGES, ROUTING_KEYS } from '../../common/constants/queues.constants';
@@ -15,6 +16,7 @@ export class XmlProcessorService {
   constructor(
     private readonly s3Service: S3Service,
     private readonly rabbitMQService: RabbitMQService,
+    private readonly processingLogRepository: NfProcessingLogRepository,
   ) {}
 
   async process(event: NfReceivedEventDto): Promise<void> {
@@ -24,6 +26,15 @@ export class XmlProcessorService {
     try {
       metadata = this.parseXml(event.xmlContent);
     } catch (error) {
+      await this.processingLogRepository.logProcessingStep({
+        chaveAcesso: event.chaveAcesso,
+        stage: 'XML_PROCESS',
+        status: 'ERROR',
+        errorCode: 'NF001',
+        errorMessage: (error as Error).message,
+        durationMs: Date.now() - startTime,
+      });
+
       throw new NonRetryableException(
         `XML parsing failed: ${(error as Error).message}`,
         'NF001',
@@ -35,6 +46,16 @@ export class XmlProcessorService {
     try {
       await this.s3Service.upload(s3Key, event.xmlContent);
     } catch (error) {
+      await this.processingLogRepository.logProcessingStep({
+        chaveAcesso: event.chaveAcesso,
+        stage: 'XML_PROCESS',
+        status: 'ERROR',
+        errorCode: 'NF009',
+        errorMessage: (error as Error).message,
+        durationMs: Date.now() - startTime,
+        metadata: { s3Key },
+      });
+
       throw new RetryableException(
         `S3 upload failed: ${(error as Error).message}`,
         'NF009',
@@ -58,6 +79,15 @@ export class XmlProcessorService {
     );
 
     const duration = Date.now() - startTime;
+
+    await this.processingLogRepository.logProcessingStep({
+      chaveAcesso: event.chaveAcesso,
+      stage: 'XML_PROCESS',
+      status: 'SUCCESS',
+      durationMs: duration,
+      metadata: { s3Key },
+    });
+
     this.logger.log(`XML processed: ${event.chaveAcesso} in ${duration}ms`);
   }
 

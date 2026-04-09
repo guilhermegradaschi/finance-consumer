@@ -63,13 +63,10 @@ Este backlog contém todas as melhorias identificadas, priorizadas por valor té
 
 | ID | Título | Cat | Esforço | Valor | Deps | Status |
 |----|--------|-----|---------|-------|------|--------|
-| IMP-011 | Criar MetricsService (prom-client) | 📊 | M | ⭐⭐⭐ | - | 🔴 TODO |
-| IMP-012 | Expor endpoint /metrics | 📊 | S | ⭐⭐⭐ | IMP-011 | 🔴 TODO |
 | IMP-013 | Implementar structured logging | 📊 | M | ⭐⭐⭐ | - | 🔴 TODO |
 | IMP-014 | Adicionar correlation ID | 📊 | M | ⭐⭐⭐ | IMP-013 | 🔴 TODO |
 | IMP-015 | Configurar OpenTelemetry | 📊 | L | ⭐⭐ | IMP-014 | 🔴 TODO |
-| IMP-016 | Criar dashboards Grafana | 📊 | M | ⭐⭐ | IMP-012 | 🔴 TODO |
-| IMP-017 | Configurar alertas críticos | 📊 | M | ⭐⭐⭐ | IMP-012 | 🔴 TODO |
+| IMP-017 | Configurar alertas críticos | 📊 | M | ⭐⭐⭐ | IMP-015 | 🔴 TODO |
 
 ---
 
@@ -257,7 +254,7 @@ export class HealthService {
 ### IMP-019: Criar BaseConsumer Abstrato
 
 **Descrição**:
-Classe base que encapsula lógica comum de todos os RabbitMQ consumers: parsing, retry com backoff, DLQ, logging, métricas.
+Classe base que encapsula lógica comum de todos os RabbitMQ consumers: parsing, retry com backoff, DLQ e logging.
 
 **Arquivos**:
 - `src/infrastructure/rabbitmq/base-consumer.ts` (criar)
@@ -277,7 +274,6 @@ export abstract class BaseConsumer<T> implements OnModuleInit {
   constructor(
     protected readonly channel: Channel,
     protected readonly logger: LoggerService,
-    protected readonly metrics: MetricsService,
   ) {}
 
   protected abstract process(data: T, context: MessageContext): Promise<void>;
@@ -335,7 +331,6 @@ export abstract class BaseConsumer<T> implements OnModuleInit {
 - [ ] BaseConsumer é classe abstrata genérica
 - [ ] Retry com exponential backoff implementado
 - [ ] DLQ funciona corretamente
-- [ ] Métricas de sucesso/erro/retry
 - [ ] Logging com correlationId
 - [ ] Testes unitários completos
 
@@ -387,8 +382,6 @@ Substituir mock do SefazClient por integração real com webservice da SEFAZ. Us
 |------|---------|-------------|
 | IMP-006 | M | Dev 1 |
 | IMP-008 | M | Dev 2 |
-| IMP-011 | M | Dev 1 |
-| IMP-012 | S | Dev 1 |
 | IMP-013 | M | Dev 2 |
 | IMP-035 | XS | Dev 2 |
 | **Total** | ~5 dias | 2 devs |
@@ -457,8 +450,6 @@ graph TD
     end
 
     subgraph "Prioridade 3: Observability"
-        J[IMP-011 Metrics]
-        K[IMP-012 /metrics]
         L[IMP-013 Logging]
         M[IMP-014 CorrelationID]
         N[IMP-015 OTEL]
@@ -480,10 +471,9 @@ graph TD
     D --> F
     D --> H
     F --> I
-    J --> K
-    K --> O
     L --> M
     M --> N
+    N --> O
     M --> P
     Q --> U
     R --> T

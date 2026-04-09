@@ -1,6 +1,6 @@
 # Implementation Checklist — finance-consumer
 
-**Última atualização do checklist:** Fases 1–2 + **Fase 3 (Features & Integrations, em grande parte entregue)** — itens marcados conforme código em `src/`, `k8s/`, `schemas/nfe/`, `docs/adr/`, `grafana/`, `prometheus/`. Itens **(parcial)** ainda exigem trabalho, homologação externa (SEFAZ), XSDs oficiais no disco, ou escopo Fase 4 / infra (ESO aplicado no cluster, TLS Ingress, etc.).
+**Última atualização do checklist:** Fases 1–2 + **Fase 3 (Features & Integrations, em grande parte entregue)** — itens marcados conforme código em `src/`, `k8s/`, `src/schemas/nfe/`, `docs/adr/`. Itens **(parcial)** ainda exigem trabalho, homologação externa (SEFAZ), XSDs oficiais no disco, ou escopo Fase 4 / infra (ESO aplicado no cluster, TLS Ingress, etc.).
 
 ---
 
@@ -17,12 +17,6 @@
   - Motivo: Controllers acessam diretamente services de domínio e `PersistenceService`, impossibilitando lógica cross-cutting (cache, auditoria) sem modificar controllers
   - Impacto: médio
   - Implementação: `src/application/application.module.ts` + use cases `receive-nf`, `list-nf`, `get-nf-by-id`, `get-nf-summary`, `get-nf-logs`, `reprocess-nf`; `NfController` e `ReprocessController` delegam aos use cases.
-
-- [x] Criar `BaseConsumer<T>` abstrato em `src/infrastructure/rabbitmq/base-consumer.ts` centralizando retry, DLQ, parsing, logging e métricas
-  - Origem: docs/01-architecture-audit.md (seção "Consumer Duplicação de Lógica"), docs/05-agent-task-list.md (TASK-201)
-  - Motivo: ~240 linhas duplicadas entre 3 consumers; bugs corrigidos em um não são propagados aos demais
-  - Impacto: alto
-  - Implementação: `base-consumer.ts`; retry/DLQ permanecem em `RabbitMQService.consume`; base aplica métricas de sucesso (`nfProcessed` / `nfValidated` / `nfPersisted`), duração por estágio e `pipelineStage` para `nfError` / `nfRetry` / `nfDlq` no service. Testes: `src/infrastructure/rabbitmq/__tests__/base-consumer.spec.ts`.
 
 - [x] Migrar `XmlProcessorConsumer` para estender `BaseConsumer<NfReceivedEvent>`
   - Origem: docs/05-agent-task-list.md (TASK-202)
@@ -96,7 +90,7 @@
   - Origem: docs/02-code-quality-audit.md (seção "Falta de Validação XSD"), docs/07-risk-register.md (RISK-006)
   - Motivo: XMLs malformados ou com estrutura incorreta passam pelo pipeline e causam erros downstream ou dados incorretos persistidos
   - Impacto: alto
-  - **Parcial:** `NfeXsdValidationService` (`libxmljs2`) + `validateOrSkip` antes do parse em `XmlProcessorService`; `NFE_XSD_BASE_PATH` / `NFE_XSD_MAIN_FILE`; instruções em [schemas/nfe/README.md](../schemas/nfe/README.md). Se path/XSD ausente, validação é ignorada (log). **Pendente:** versionar ou automatizar download do pacote oficial de XSD no deploy.
+  - **Parcial:** `NfeXsdValidationService` (`libxmljs2`) + `validateOrSkip` antes do parse em `XmlProcessorService`; `NFE_XSD_BASE_PATH` / `NFE_XSD_MAIN_FILE`; instruções em [schemas/nfe/README.md](../src/schemas/nfe/README.md). Se path/XSD ausente, validação é ignorada (log). **Pendente:** versionar ou automatizar download do pacote oficial de XSD no deploy.
 
 - [x] Criar `CircuitBreakerFactory` injetável em `src/infrastructure/http/circuit-breaker.factory.ts` usando `opossum` com defaults padronizados
   - Origem: docs/01-architecture-audit.md (seção "Circuit Breaker Inconsistente"), docs/05-agent-task-list.md (TASK-205)
@@ -256,13 +250,13 @@
   - Origem: docs/03-infra-audit.md (seção ".dockerignore")
   - Motivo: Sem `.dockerignore`, copia-se tudo incluindo `.git` e `node_modules` dev, inflando a imagem
   - Impacto: baixo
-  - Implementação: `.dockerignore` na raiz exclui `.git`, `node_modules`, `coverage`, `.env*`, `docs/`, `test/`, `k8s/`, `grafana/`, `prometheus/`, `schemas/`, `scripts/`, `tasks/`.
+  - Implementação: `.dockerignore` na raiz exclui `.git`, `node_modules`, `coverage`, `.env*`, `docs/`, `src/test/`, `k8s/`, `src/schemas/`.
 
-- [ ] Melhorar HPA (`k8s/hpa.yaml`) adicionando escala por memória e métrica customizada de profundidade de fila RabbitMQ (via Prometheus Adapter)
+- [ ] Melhorar HPA (`k8s/hpa.yaml`) adicionando escala por métrica customizada de profundidade de fila RabbitMQ
   - Origem: docs/03-infra-audit.md (seção "HPA Melhorado"), docs/04-refactor-roadmap.md (tarefa 1.6)
   - Motivo: HPA atual escala apenas por CPU — filas acumulando não disparam scale-up
   - Impacto: médio
-  - **Parcial:** `k8s/hpa.yaml` já escala por **CPU e memória**; comentário no manifesto documenta métrica de fila + Prometheus Adapter como próximo passo.
+  - **Parcial:** `k8s/hpa.yaml` já escala por **CPU e memória**; métrica de fila como próximo passo.
 
 - [x] Adicionar job de security scan (SAST) no CI pipeline com Trivy e/ou Snyk
   - Origem: docs/03-infra-audit.md (tabela de problemas no CI/CD), docs/08-improvement-backlog.md (IMP-038)
@@ -313,18 +307,6 @@
   - Implementação: `src/infrastructure/health/`, `src/modules/api-gateway/controllers/health.controller.ts`
   - Impacto: alto
 
-- [x] Criar `MetricsService` com `prom-client` expondo counters (`nf_received_total`, `nf_processed_total`, `nf_errors_total`, etc.), histograms (`nf_processing_duration_seconds`, `http_request_duration_seconds`) e `collectDefaultMetrics` do Node
-  - Origem: docs/03-infra-audit.md (seção "Implementação de Métricas"), docs/05-agent-task-list.md (TASK-103)
-  - Motivo: Métricas são coletadas in-memory mas não exportadas — zero observabilidade em produção
-  - Impacto: alto
-  - **Parcial:** gauge `rabbitmq_queue_depth` **não** é exportado pelo app — usar métricas do broker (ex.: RabbitMQ exporter) + HPA/dashboards, conforme README.
-
-- [x] Criar `MetricsController` expondo endpoint `GET /metrics` sem autenticação, retornando métricas em formato texto Prometheus
-  - Origem: docs/05-agent-task-list.md (TASK-104), docs/03-infra-audit.md
-  - Motivo: Prometheus precisa de endpoint para scraping; annotation `prometheus.io/scrape: "true"` no pod já está prevista
-  - Impacto: alto
-  - Implementação: `src/modules/api-gateway/controllers/metrics.controller.ts` (fora do throttle global); `k8s/deployment.yaml` com annotations `prometheus.io/*` e porta `http`.
-
 - [x] Implementar structured logging em formato JSON com campos obrigatórios (`timestamp`, `level`, `message`, `service`, `correlationId`)
   - Origem: docs/03-infra-audit.md (estado atual de Observabilidade), docs/05-agent-task-list.md (TASK-106)
   - Motivo: Logs atuais são texto livre, dificultando busca e análise em Loki/ELK
@@ -348,18 +330,6 @@
   - Motivo: Chamadas a serviços externos não aparecem em traces — dificulta diagnóstico de lentidão
   - Impacto: médio
   - Implementação: `src/infrastructure/observability/http-client-tracing.ts` + clients em `src/modules/business-validator/clients/`
-
-- [x] Criar dashboards Grafana básicos (throughput NF-e, latência por stage, error rate, queue depth, recursos do pod)
-  - Origem: docs/04-refactor-roadmap.md (tarefa 1.11), docs/08-improvement-backlog.md (IMP-016)
-  - Motivo: Não existem dashboards — visibilidade operacional é zero
-  - Impacto: médio
-  - **Parcial:** `grafana/dashboards/finance-consumer-overview.json` cobre taxa de recebimento, erros por stage, latência HTTP p99 e métricas de processo; painel dedicado a **queue depth** depende de fonte externa (RabbitMQ).
-
-- [x] Configurar alertas críticos no AlertManager/Prometheus: DB down, queue stuck (depth > threshold), error rate > 5%, latência P99 alta
-  - Origem: docs/04-refactor-roadmap.md (tarefa 1.12), docs/08-improvement-backlog.md (IMP-017)
-  - Motivo: Incidentes são detectados por usuários antes de SRE; MTTD estimado > 30 min
-  - Impacto: alto
-  - **Parcial:** `prometheus/alerts/finance-consumer.yml` inclui taxa de erro do pipeline vs recebimentos, latência HTTP p99 e ausência de recebimentos; alertas **DB down** e **fila presa** exigem métricas de Postgres/RabbitMQ no Prometheus (ex.: `pg_up`, filas do exporter) — exemplos comentados no arquivo.
 
 - [ ] Garantir que logs de erro incluam stack trace completo mas nunca dados sensíveis (passwords, tokens, números de cartão)
   - Origem: docs/06-development-rules.md (regra S02), docs/05-agent-task-list.md (TASK-106)
@@ -472,7 +442,7 @@
   - Origem: docs/04-refactor-roadmap.md (tarefa 4.6), docs/07-risk-register.md (RISK-016)
   - Motivo: Documentação menciona nomes de filas e rotas que podem divergir do código real; causa confusão em onboarding
   - Impacto: médio
-  - **Parcial (Fase 1):** README ganhou seção **Observabilidade** (`/metrics`, OTEL, correlation ID, smoke curls) e referência a `kubectl apply -f k8s/pdb.yaml`; revisão completa de filas/rotas vs código permanece pendente.
+  - **Parcial (Fase 1):** README ganhou seção **Observabilidade** (OTEL, correlation ID, smoke curls) e referência a `kubectl apply -f k8s/pdb.yaml`; revisão completa de filas/rotas vs código permanece pendente.
 
 - [ ] Documentar APIs com Swagger/OpenAPI decorators nos controllers e DTOs para gerar documentação interativa
   - Origem: docs/04-refactor-roadmap.md (tarefa 4.7), docs/08-improvement-backlog.md (IMP-047)

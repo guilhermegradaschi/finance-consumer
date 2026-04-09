@@ -7,6 +7,7 @@ import { ListNfUseCase } from './use-cases/list-nf.use-case';
 import { GetNfByIdUseCase } from './use-cases/get-nf-by-id.use-case';
 import { GetNfSummaryUseCase } from './use-cases/get-nf-summary.use-case';
 import { GetNfLogsUseCase } from './use-cases/get-nf-logs.use-case';
+import { GetNfTimelineUseCase } from './use-cases/get-nf-timeline.use-case';
 import { ReprocessNfUseCase } from './use-cases/reprocess-nf.use-case';
 
 @Module({
@@ -18,6 +19,7 @@ import { ReprocessNfUseCase } from './use-cases/reprocess-nf.use-case';
     GetNfByIdUseCase,
     GetNfSummaryUseCase,
     GetNfLogsUseCase,
+    GetNfTimelineUseCase,
     ReprocessNfUseCase,
   ],
   exports: [
@@ -27,6 +29,7 @@ import { ReprocessNfUseCase } from './use-cases/reprocess-nf.use-case';
     GetNfByIdUseCase,
     GetNfSummaryUseCase,
     GetNfLogsUseCase,
+    GetNfTimelineUseCase,
     ReprocessNfUseCase,
   ],
 })

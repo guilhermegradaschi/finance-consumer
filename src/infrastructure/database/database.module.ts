@@ -19,7 +19,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         migrations: [__dirname + '/../../migrations/*{.ts,.js}'],
         synchronize: false,
         migrationsRun: config.get<string>('NODE_ENV') !== 'test',
-        logging: config.get<string>('NODE_ENV') === 'development',
+        logging: config.get<boolean>('DB_LOGGING', false),
         extra: {
           max: config.get<number>('DB_POOL_SIZE', 20),
         },

@@ -95,14 +95,16 @@ src/
 │   ├── rabbitmq/        # RabbitMQ messaging
 │   ├── redis/           # Redis + Idempotency
 │   ├── s3/              # AWS S3/MinIO
-│   └── observability/   # Logger, Metrics
+│   └── observability/   # Logger
 ├── migrations/          # TypeORM migrations
-└── modules/             # Business modules
-    ├── api-gateway/     # REST API controllers + Swagger
-    ├── business-validator/  # CNPJ + SEFAZ validation
-    ├── email-consumer/  # IMAP email ingestion
-    ├── nf-receiver/     # Entry point for NF processing
-    ├── persistence/     # Entities, repositories, persistence service
-    ├── s3-listener/     # S3 event ingestion
-    └── xml-processor/   # XML parsing and S3 upload
+├── modules/             # Business modules
+│   ├── api-gateway/     # REST API controllers + Swagger
+│   ├── business-validator/  # CNPJ + SEFAZ validation
+│   ├── email-consumer/  # IMAP email ingestion
+│   ├── nf-receiver/     # Entry point for NF processing
+│   ├── persistence/     # Entities, repositories, persistence service
+│   ├── s3-listener/     # S3 event ingestion
+│   └── xml-processor/   # XML parsing and S3 upload
+├── schemas/nfe/         # XSD schemas para validação NF-e
+└── test/                # Fixtures XML e configs Jest (e2e, integration)
 ```

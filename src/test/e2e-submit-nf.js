@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-const XML_PATH = process.argv[2] || 'test/fixtures/xml_example.xml';
+const XML_PATH = process.argv[2] || 'src/test/fixtures/xml_example.xml';
 
 const token = jwt.sign({ sub: 'test-user', role: 'admin' }, JWT_SECRET, { expiresIn: '1h' });
 

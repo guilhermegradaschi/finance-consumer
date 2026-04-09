@@ -10,8 +10,8 @@ const ENDPOINT = `${BASE_URL}/api/v1/nf`;
 
 const xmlFile = process.argv[2];
 if (!xmlFile) {
-  console.error('Usage: node test/test-post-nf.js <path-to-xml-file>');
-  console.error('Example: node test/test-post-nf.js test/fixtures/xml_example.xml');
+  console.error('Usage: node src/test/test-post-nf.js <path-to-xml-file>');
+  console.error('Example: node src/test/test-post-nf.js src/test/fixtures/xml_example.xml');
   process.exit(1);
 }
 

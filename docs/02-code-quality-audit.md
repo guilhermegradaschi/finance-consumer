@@ -217,7 +217,7 @@ export class XmlValidatorService {
   private readonly xsdDoc: Document;
   
   constructor() {
-    const xsdContent = readFileSync('schemas/nfe_v4.00.xsd', 'utf-8');
+    const xsdContent = readFileSync('src/schemas/nfe_v4.00.xsd', 'utf-8');
     this.xsdDoc = parseXml(xsdContent);
   }
   

@@ -524,10 +524,6 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: finance-consumer
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "3000"
-        prometheus.io/path: "/metrics"
     spec:
       serviceAccountName: finance-consumer
       
@@ -681,7 +677,6 @@ spec:
         target:
           type: Utilization
           averageUtilization: 80
-    # Custom metric: queue depth (requer Prometheus Adapter)
     - type: External
       external:
         metric:
@@ -769,10 +764,8 @@ spec:
 │  │   finance   │───▶│   OTEL      │───▶│   Tempo     │                     │
 │  │  consumer   │    │  Collector  │    │  (Traces)   │                     │
 │  │             │    │             │    └─────────────┘                     │
-│  │  /metrics   │───▶│             │───▶│ Prometheus  │───▶│  Grafana  │   │
-│  │             │    │             │    │  (Metrics)  │    │           │   │
-│  │  stdout     │───▶│             │───▶│    Loki     │───▶│           │   │
-│  └─────────────┘    └─────────────┘    │   (Logs)    │    └───────────┘   │
+│  │  stdout     │───▶│             │───▶│    Loki     │                    │
+│  └─────────────┘    └─────────────┘    │   (Logs)    │                    │
 │                                        └─────────────┘                     │
 │                                                                             │
 │                     ┌─────────────┐                                         │
@@ -780,103 +773,6 @@ spec:
 │                     └─────────────┘                                         │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Implementação de Métricas
-
-```typescript
-// src/infrastructure/observability/metrics.service.ts
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { Counter, Histogram, Gauge, Registry, collectDefaultMetrics } from 'prom-client';
-
-@Injectable()
-export class MetricsService implements OnModuleInit {
-  private readonly registry: Registry;
-  
-  // Counters
-  public readonly nfReceived: Counter;
-  public readonly nfProcessed: Counter;
-  public readonly nfErrors: Counter;
-  
-  // Histograms
-  public readonly processingDuration: Histogram;
-  public readonly httpRequestDuration: Histogram;
-  
-  // Gauges
-  public readonly queueDepth: Gauge;
-  public readonly activeConnections: Gauge;
-  
-  constructor() {
-    this.registry = new Registry();
-    
-    // NF Counters
-    this.nfReceived = new Counter({
-      name: 'nf_received_total',
-      help: 'Total NF-e received',
-      labelNames: ['source', 'status'],
-      registers: [this.registry],
-    });
-    
-    this.nfProcessed = new Counter({
-      name: 'nf_processed_total',
-      help: 'Total NF-e processed',
-      labelNames: ['stage', 'status'],
-      registers: [this.registry],
-    });
-    
-    this.nfErrors = new Counter({
-      name: 'nf_errors_total',
-      help: 'Total NF-e processing errors',
-      labelNames: ['stage', 'error_type', 'retryable'],
-      registers: [this.registry],
-    });
-    
-    // Processing Duration
-    this.processingDuration = new Histogram({
-      name: 'nf_processing_duration_seconds',
-      help: 'NF-e processing duration',
-      labelNames: ['stage'],
-      buckets: [0.1, 0.5, 1, 2, 5, 10, 30],
-      registers: [this.registry],
-    });
-    
-    // HTTP Duration
-    this.httpRequestDuration = new Histogram({
-      name: 'http_request_duration_seconds',
-      help: 'HTTP request duration',
-      labelNames: ['method', 'route', 'status_code'],
-      buckets: [0.01, 0.05, 0.1, 0.5, 1, 5],
-      registers: [this.registry],
-    });
-    
-    // Queue Depth
-    this.queueDepth = new Gauge({
-      name: 'rabbitmq_queue_depth',
-      help: 'Current queue depth',
-      labelNames: ['queue'],
-      registers: [this.registry],
-    });
-  }
-  
-  onModuleInit() {
-    collectDefaultMetrics({ register: this.registry });
-  }
-  
-  getMetrics(): Promise<string> {
-    return this.registry.metrics();
-  }
-}
-
-// src/modules/api-gateway/controllers/metrics.controller.ts
-@Controller('metrics')
-export class MetricsController {
-  constructor(private readonly metricsService: MetricsService) {}
-  
-  @Get()
-  async getMetrics(): Promise<string> {
-    return this.metricsService.getMetrics();
-  }
-}
 ```
 
 ### Implementação de Tracing (OpenTelemetry)
@@ -1048,7 +944,6 @@ export class AppModule {}
 - [ ] Health checks verificando dependências
 - [ ] Resource limits em todos containers
 - [ ] PodDisruptionBudget configurado
-- [ ] Métricas exportadas para Prometheus
 - [ ] Logs estruturados para Loki/ELK
 - [ ] Alertas básicos configurados
 - [ ] Runbook de incidentes documentado
@@ -1056,7 +951,6 @@ export class AppModule {}
 ### Pós-Produção Recomendado
 
 - [ ] Tracing distribuído (OTEL)
-- [ ] Dashboards Grafana
 - [ ] SLOs/SLIs definidos
 - [ ] Chaos engineering (Litmus)
 - [ ] Load testing automatizado
