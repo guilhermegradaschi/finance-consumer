@@ -93,6 +93,23 @@ export class S3Service implements OnModuleInit {
     return (response.Contents ?? []).map((obj) => obj.Key!).filter(Boolean);
   }
 
+  async uploadExternalInvoiceXml(accessKey: string, xml: string | Buffer): Promise<string> {
+    const key = `external-invoices/${accessKey}.xml`;
+    await this.upload(key, xml, 'application/octet-stream');
+    return key;
+  }
+
+  async uploadInvoiceEventXml(accessKey: string, eventType: string, xml: string | Buffer): Promise<string> {
+    const key = `invoice-events/${accessKey}-${eventType}.xml`;
+    await this.upload(key, xml, 'application/octet-stream');
+    return key;
+  }
+
+  async readExternalInvoiceXml(accessKey: string): Promise<string> {
+    const key = `external-invoices/${accessKey}.xml`;
+    return this.download(key);
+  }
+
   private async streamToString(stream: Readable): Promise<string> {
     const chunks: Buffer[] = [];
     for await (const chunk of stream) {

@@ -6,6 +6,7 @@ import { RedisModule } from './infrastructure/redis/redis.module';
 import { S3Module } from './infrastructure/s3/s3.module';
 import { RabbitMQModule } from './infrastructure/rabbitmq/rabbitmq.module';
 import { ObservabilityModule } from './infrastructure/observability/observability.module';
+import { HttpInfraModule } from './infrastructure/http/http.module';
 import { PersistenceModule } from './modules/persistence/persistence.module';
 import { NfReceiverModule } from './modules/nf-receiver/nf-receiver.module';
 import { XmlProcessorModule } from './modules/xml-processor/xml-processor.module';
@@ -13,6 +14,9 @@ import { BusinessValidatorModule } from './modules/business-validator/business-v
 import { ApiGatewayModule } from './modules/api-gateway/api-gateway.module';
 import { EmailConsumerModule } from './modules/email-consumer/email-consumer.module';
 import { S3ListenerModule } from './modules/s3-listener/s3-listener.module';
+import { InvoiceImportModule } from './modules/invoice-import/invoice-import.module';
+import { InvoiceProcessorModule } from './modules/invoice-processor/invoice-processor.module';
+import { InvoiceEventsModule } from './modules/invoice-events/invoice-events.module';
 
 @Module({
   imports: [
@@ -57,7 +61,17 @@ import { S3ListenerModule } from './modules/s3-listener/s3-listener.module';
         THROTTLE_TTL: Joi.number().default(60000),
         THROTTLE_LIMIT: Joi.number().default(100),
 
+        QIVE_API_URL: Joi.string().allow('').default(''),
+        QIVE_API_KEY: Joi.string().allow('').default(''),
+        QIVE_API_ID: Joi.string().allow('').default(''),
+
+        BUYER_API_URL: Joi.string().allow('').default(''),
+        SELLER_API_URL: Joi.string().allow('').default(''),
+
         IMAP_ENABLED: Joi.boolean().default(false),
+        IMAP_USERNAME: Joi.string().allow('').default(''),
+        IMAP_PASSWORD: Joi.string().allow('').default(''),
+
         SQS_ENABLED: Joi.boolean().default(false),
         LOG_LEVEL: Joi.string().default('debug'),
       }),
@@ -71,6 +85,7 @@ import { S3ListenerModule } from './modules/s3-listener/s3-listener.module';
     S3Module,
     RabbitMQModule,
     ObservabilityModule,
+    HttpInfraModule,
     PersistenceModule,
     NfReceiverModule,
     XmlProcessorModule,
@@ -78,6 +93,9 @@ import { S3ListenerModule } from './modules/s3-listener/s3-listener.module';
     ApiGatewayModule,
     EmailConsumerModule,
     S3ListenerModule,
+    InvoiceImportModule,
+    InvoiceProcessorModule,
+    InvoiceEventsModule,
   ],
 })
 export class AppModule {}

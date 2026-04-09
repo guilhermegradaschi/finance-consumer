@@ -1,0 +1,39 @@
+# Adjust labels (job, namespace, pod) to match your Prometheus scrape config.
+# Queue depth: prefer rabbitmq_exporter metrics (e.g. rabbitmq_queue_messages_ready) in a separate rule group.
+
+groups:
+  - name: finance_consumer_nf_pipeline
+    rules:
+      - alert: FinanceConsumerHighNfErrorRate
+        expr: |
+          sum(rate(nf_errors_total[5m]))
+            / clamp_min(sum(rate(nf_received_total[5m])), 0.001) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: NF-e pipeline error rate above 5% vs receive rate
+          description: Check application logs (correlationId) and DLQ metrics nf_dlq_total.
+
+      - alert: FinanceConsumerNoNfReceived
+        expr: sum(rate(nf_received_total[15m])) == 0
+        for: 60m
+        labels:
+          severity: warning
+        annotations:
+          summary: No NF-e received in the last hour (when traffic was expected)
+          description: Verify ingress, API consumers, and RabbitMQ publishers.
+
+  - name: finance_consumer_http
+    rules:
+      - alert: FinanceConsumerHighHttpLatencyP99
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le)
+          ) > 5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: HTTP p99 latency above 5s
+          description: Inspect slow handlers and downstream dependencies (DB, Redis, RabbitMQ).

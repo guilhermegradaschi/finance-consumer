@@ -1,0 +1,12 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nf-processor-pdb
+  namespace: nf-processor
+  labels:
+    app: nf-processor
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: nf-processor
