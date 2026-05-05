@@ -59,10 +59,10 @@ describe('RabbitMQService', () => {
     await service.onModuleInit();
   });
 
-  it('should connect and setup topology with 3 exchanges and 11 queues', () => {
-    expect(mockChannel.assertExchange).toHaveBeenCalledTimes(3);
+  it('should connect and setup topology with nf.events, nf.topic, retry, dlq and queues', () => {
+    expect(mockChannel.assertExchange).toHaveBeenCalledTimes(4);
     expect(mockChannel.assertQueue).toHaveBeenCalledTimes(11);
-    expect(mockChannel.bindQueue).toHaveBeenCalledTimes(11);
+    expect(mockChannel.bindQueue).toHaveBeenCalledTimes(18);
   });
 
   it('should publish a message to an exchange', async () => {

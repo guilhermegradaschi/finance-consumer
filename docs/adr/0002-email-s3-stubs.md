@@ -11,7 +11,8 @@ Optional ingestion paths (`IMAP_ENABLED`, `SQS_ENABLED`) were planned for NF-e X
 ## Decision
 
 - **Default:** `IMAP_ENABLED=false` and `SQS_ENABLED=false`. The application starts normally; email and S3-listener code paths do not throw on startup.
-- **Email:** When enabled, the service polls on an interval but does not fetch IMAP attachments (returns empty until a real implementation exists).
+- **Email:** When `IMAP_ENABLED=true` and `IMAP_MOCK_ENABLED=false`, `ImapImporterService` conecta a `IMAP_HOST` (porta/tls via env), busca `UNSEEN`, anexos `.xml` / `.zip` (limite de anexos e tamanho descompactado via env). Mock local continua disponível com `IMAP_MOCK_ENABLED=true`.
+- **Email consumer (legado):** `EmailConsumerService` ainda usa apenas fixture local quando mock; produção deve preferir cron `IMAP_CRON_ENABLED` + `ImapImporterService`.
 - **S3/SQS:** When enabled, long polling is not implemented; `processS3Event` remains available for programmatic or future trigger use.
 
 ## Consequences

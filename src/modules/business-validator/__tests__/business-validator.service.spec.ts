@@ -3,12 +3,14 @@ import { BusinessValidatorService } from '../business-validator.service';
 import { RabbitMQService } from '../../../infrastructure/rabbitmq/rabbitmq.service';
 import { ReceitaWsClient } from '../clients/receita-ws.client';
 import { SefazClient } from '../clients/sefaz.client';
+import { NfProcessingLogRepository } from '../../persistence/repositories/nf-processing-log.repository';
 
 describe('BusinessValidatorService', () => {
   let service: BusinessValidatorService;
   const mockRabbitMQ = { publish: jest.fn() };
   const mockReceitaWs = { validateCnpj: jest.fn() };
   const mockSefaz = { validateNfe: jest.fn() };
+  const mockLogRepo = { logProcessingStep: jest.fn().mockResolvedValue({}) };
 
   const event = {
     chaveAcesso: '35240112345678000195550010000001231234567890',
@@ -38,6 +40,7 @@ describe('BusinessValidatorService', () => {
         { provide: RabbitMQService, useValue: mockRabbitMQ },
         { provide: ReceitaWsClient, useValue: mockReceitaWs },
         { provide: SefazClient, useValue: mockSefaz },
+        { provide: NfProcessingLogRepository, useValue: mockLogRepo },
       ],
     }).compile();
 

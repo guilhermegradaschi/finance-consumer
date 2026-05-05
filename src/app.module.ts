@@ -17,6 +17,7 @@ import { S3ListenerModule } from './modules/s3-listener/s3-listener.module';
 import { InvoiceImportModule } from './modules/invoice-import/invoice-import.module';
 import { InvoiceProcessorModule } from './modules/invoice-processor/invoice-processor.module';
 import { InvoiceEventsModule } from './modules/invoice-events/invoice-events.module';
+import { ScheduledJobsModule } from './modules/scheduled-jobs/scheduled-jobs.module';
 
 @Module({
   imports: [
@@ -78,6 +79,31 @@ import { InvoiceEventsModule } from './modules/invoice-events/invoice-events.mod
 
         SQS_ENABLED: Joi.boolean().default(false),
         LOG_LEVEL: Joi.string().default('debug'),
+
+        NFE_LEGACY_RABBIT_PAYLOAD: Joi.boolean().default(false),
+        NFE_OUTBOX_ENABLED: Joi.boolean().default(false),
+        NFE_XSD_ENABLED: Joi.boolean().default(false),
+        NFE_LEGACY_NOTA_FISCAL_ENABLED: Joi.boolean().default(true),
+        NFE_DUAL_WRITE_EXTERNAL_INVOICE: Joi.boolean().default(false),
+
+        QIVE_CRON_ENABLED: Joi.boolean().default(false),
+        QIVE_CRON_EXPRESSION: Joi.string().default('0 */15 * * * *'),
+        EXTERNAL_INVOICES_PROCESSOR_CRON_ENABLED: Joi.boolean().default(false),
+        EXTERNAL_INVOICES_PROCESSOR_CRON_EXPRESSION: Joi.string().default('0 */10 * * * *'),
+        IMAP_CRON_ENABLED: Joi.boolean().default(false),
+        IMAP_CRON_EXPRESSION: Joi.string().default('0 */5 * * * *'),
+        INVOICE_EVENTS_IMPORTER_CRON_ENABLED: Joi.boolean().default(false),
+        INVOICE_EVENTS_IMPORTER_CRON_EXPRESSION: Joi.string().default('0 */10 * * * *'),
+        INVOICE_EVENTS_PROCESSOR_CRON_ENABLED: Joi.boolean().default(false),
+
+        NFE_QIVE_USE_SUBMIT_INGESTION: Joi.boolean().default(false),
+        NFE_IMAP_USE_SUBMIT_INGESTION: Joi.boolean().default(false),
+
+        IMAP_HOST: Joi.string().allow('').default(''),
+        IMAP_PORT: Joi.number().default(993),
+        IMAP_TLS: Joi.boolean().default(true),
+        IMAP_MAX_ATTACHMENTS_PER_MAIL: Joi.number().default(10),
+        IMAP_MAX_UNCOMPRESSED_ZIP_BYTES: Joi.number().default(20 * 1024 * 1024),
       }),
       validationOptions: {
         allowUnknown: true,
@@ -100,6 +126,7 @@ import { InvoiceEventsModule } from './modules/invoice-events/invoice-events.mod
     InvoiceImportModule,
     InvoiceProcessorModule,
     InvoiceEventsModule,
+    ScheduledJobsModule,
   ],
 })
 export class AppModule {}

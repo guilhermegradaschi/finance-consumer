@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { S3Service } from '../../infrastructure/s3/s3.service';
 import { RabbitMQService } from '../../infrastructure/rabbitmq/rabbitmq.service';
 import { NfProcessingLogRepository } from '../persistence/repositories/nf-processing-log.repository';
@@ -8,6 +9,7 @@ import { EXCHANGES, ROUTING_KEYS } from '../../common/constants/queues.constants
 import { extractXmlTag } from '../../common/utils/xml.util';
 import { NfReceivedEventDto } from '../nf-receiver/dto/nf-received-event.dto';
 import { XmlMetadataDto } from './dto/xml-metadata.dto';
+import { NfeXsdValidationService } from './nfe-xsd-validation.service';
 
 @Injectable()
 export class XmlProcessorService {
@@ -17,14 +19,53 @@ export class XmlProcessorService {
     private readonly s3Service: S3Service,
     private readonly rabbitMQService: RabbitMQService,
     private readonly processingLogRepository: NfProcessingLogRepository,
+    private readonly configService: ConfigService,
+    private readonly nfeXsdValidationService: NfeXsdValidationService,
   ) {}
 
   async process(event: NfReceivedEventDto): Promise<void> {
     const startTime = Date.now();
 
+    let xmlContent = event.xmlContent ?? '';
+    if (!xmlContent && event.rawStorageKey) {
+      try {
+        xmlContent = await this.s3Service.download(event.rawStorageKey);
+      } catch (error) {
+        await this.processingLogRepository.logProcessingStep({
+          chaveAcesso: event.chaveAcesso,
+          stage: 'XML_PROCESS',
+          status: 'ERROR',
+          errorCode: 'NF010',
+          errorMessage: (error as Error).message,
+          durationMs: Date.now() - startTime,
+          metadata: { rawStorageKey: event.rawStorageKey },
+        });
+        throw new RetryableException(
+          `S3 download failed: ${(error as Error).message}`,
+          'NF010',
+          { chaveAcesso: event.chaveAcesso, rawStorageKey: event.rawStorageKey },
+        );
+      }
+    }
+    if (!xmlContent?.trim()) {
+      await this.processingLogRepository.logProcessingStep({
+        chaveAcesso: event.chaveAcesso,
+        stage: 'XML_PROCESS',
+        status: 'ERROR',
+        errorCode: 'NF011',
+        errorMessage: 'Missing xmlContent and rawStorageKey',
+        durationMs: Date.now() - startTime,
+      });
+      throw new NonRetryableException('Missing XML payload', 'NF011', { chaveAcesso: event.chaveAcesso });
+    }
+
+    if (this.configService.get<boolean>('NFE_XSD_ENABLED', false)) {
+      this.nfeXsdValidationService.validateOrSkip(xmlContent);
+    }
+
     let metadata: XmlMetadataDto;
     try {
-      metadata = this.parseXml(event.xmlContent);
+      metadata = this.parseXml(xmlContent);
     } catch (error) {
       await this.processingLogRepository.logProcessingStep({
         chaveAcesso: event.chaveAcesso,
@@ -42,25 +83,30 @@ export class XmlProcessorService {
       );
     }
 
-    const s3Key = this.s3Service.buildNfKey(event.chaveAcesso);
-    try {
-      await this.s3Service.upload(s3Key, event.xmlContent);
-    } catch (error) {
-      await this.processingLogRepository.logProcessingStep({
-        chaveAcesso: event.chaveAcesso,
-        stage: 'XML_PROCESS',
-        status: 'ERROR',
-        errorCode: 'NF009',
-        errorMessage: (error as Error).message,
-        durationMs: Date.now() - startTime,
-        metadata: { s3Key },
-      });
+    const s3Key =
+      event.preUploadedToS3 && event.rawStorageKey
+        ? event.rawStorageKey
+        : this.s3Service.buildNfKey(event.chaveAcesso);
+    if (!event.preUploadedToS3 || !event.rawStorageKey) {
+      try {
+        await this.s3Service.upload(s3Key, xmlContent);
+      } catch (error) {
+        await this.processingLogRepository.logProcessingStep({
+          chaveAcesso: event.chaveAcesso,
+          stage: 'XML_PROCESS',
+          status: 'ERROR',
+          errorCode: 'NF009',
+          errorMessage: (error as Error).message,
+          durationMs: Date.now() - startTime,
+          metadata: { s3Key },
+        });
 
-      throw new RetryableException(
-        `S3 upload failed: ${(error as Error).message}`,
-        'NF009',
-        { chaveAcesso: event.chaveAcesso, s3Key },
-      );
+        throw new RetryableException(
+          `S3 upload failed: ${(error as Error).message}`,
+          'NF009',
+          { chaveAcesso: event.chaveAcesso, s3Key },
+        );
+      }
     }
 
     const processedEvent = {

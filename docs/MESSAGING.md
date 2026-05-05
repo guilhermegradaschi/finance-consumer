@@ -1,5 +1,9 @@
 # MESSAGING.md — Arquitetura RabbitMQ, Eventos e Configuração
 
+## 0. Código vs diagrama legado
+
+O serviço declara exchanges `nf.events`, `nf.topic` (topic), `nf.retry`, `nf.dlq` e filas nomeadas `nf.received`, `nf.process.xml`, etc. (ver `src/common/constants/queues.constants.ts` e `RabbitMQService.setupTopology`). A exchange `nf.topic` recebe bindings espelhados para permitir routing keys adicionais (`ingest.accepted`, `nfe.validate`, `nfe.persist`, …) sem quebrar consumidores existentes.
+
 ## 1. Arquitetura de Filas
 
 ### 1.1 Topology

@@ -1,5 +1,6 @@
 export const EXCHANGES = {
   EVENTS: 'nf.events',
+  NF_TOPIC: 'nf.topic',
   RETRY: 'nf.retry',
   DLQ: 'nf.dlq',
   INVOICE: 'invoice.events',
@@ -31,6 +32,12 @@ export const ROUTING_KEYS = {
   NF_VALIDATED: 'nf.validated',
   NF_PERSISTED: 'nf.persisted',
   NF_FAILED: 'nf.failed',
+  INGEST_ACCEPTED: 'ingest.accepted',
+  NFE_VALIDATE: 'nfe.validate',
+  NFE_PERSIST: 'nfe.persist',
+  NFE_ASSOCIATE: 'nfe.associate',
+  EVENT_RECEIVED: 'event.received',
+  EVENT_PROCESS: 'event.process',
   INVOICE_IMPORT_COMPLETED: 'invoice.import.completed',
   INVOICE_EVENTS_IMPORTED: 'invoice.events.imported',
 } as const;

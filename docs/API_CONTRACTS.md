@@ -1,10 +1,24 @@
 # API_CONTRACTS.md — Endpoints REST, DTOs, Autenticação e Swagger
 
+## 0. Políticas de produto (NFe) — defaults implementados
+
+| Tema | Default | Observação |
+|------|---------|------------|
+| Evento de cancelamento antes da NF existir | Evento registrado em `invoice_events` / fluxo Qive com status `SKIPPED` até a NF aparecer; ingestão HTTP grava `nfe_events` e encaminha para `InvoiceEventCreator` | Evolução: fila dedicada com retry/backoff (ver checklist §0). |
+| Segunda ingestão mesma `access_key` com XML diferente | Conflito na idempotência (`nfe_ingestions` / Redis) — duplicata não republica | Alinhar com alerta operacional se necessário. |
+| SKU obrigatório para `processed` | `ExternalInvoice` pode ir a `PROCESSED` sem `sku_id` em itens; associação assíncrona existente | Métricas de cobertura SKU podem ser adicionadas. |
+| Rotas HTTP | `/api/v1/nf` mantido; `/ingest/nfe/*` como contrato novo | Deprecação documentada por release. |
+| Códigos de erro estáveis (ingestão) | `XML_MALFORMED`, `INVALID_PAYLOAD`, `S3_UPLOAD_FAILED`, `NF001`… | Resposta JSON via exception filter (`code`, `message`). |
+
 ## 1. Visão Geral da API
 
 | Método | Endpoint                          | Descrição                        | Auth | Rate Limit   |
 |--------|-----------------------------------|----------------------------------|------|--------------|
 | POST   | /api/v1/nf                        | Submeter NF-e para processamento | JWT  | 100 req/min  |
+| POST   | /ingest/nfe/provider              | Ingestão JSON (xmlContent ou xml_base64) | JWT  | 60 req/min (Throttle) |
+| POST   | /ingest/nfe/provider/upload      | Ingestão multipart (file)       | JWT  | 60 req/min   |
+| POST   | /ingest/nfe/events               | Evento NFe (XML/base64)         | JWT  | 60 req/min   |
+| POST   | /admin/invoices/:accessKey/reprocess | Alias de reprocessamento   | JWT  | herdado      |
 | GET    | /api/v1/nf                        | Listar NF-es com filtros         | JWT  | 200 req/min  |
 | GET    | /api/v1/nf/:chaveAcesso           | Consultar NF-e por chave         | JWT  | 200 req/min  |
 | GET    | /api/v1/nf/:chaveAcesso/logs      | Logs de processamento            | JWT  | 200 req/min  |

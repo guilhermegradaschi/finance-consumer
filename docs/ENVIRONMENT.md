@@ -45,6 +45,13 @@
 | `SEFAZ_TIMEOUT_MS`         | Não         | `10000`                       | `10000`                                          | Timeout para chamadas SEFAZ                            |
 | `RECEITA_WS_URL`           | Não         | `https://receitaws.com.br/v1` | `https://receitaws.com.br/v1`                    | URL da API ReceitaWS                                   |
 | `RECEITA_WS_TIMEOUT_MS`    | Não         | `10000`                       | `10000`                                          | Timeout para chamadas ReceitaWS                        |
+| **NFe / ingestão**         |             |                               |                                                  |                                                        |
+| `NFE_LEGACY_RABBIT_PAYLOAD`| Não         | `false`                       | `true` durante migração                          | Se `true`, repete `xmlContent` na mensagem `nf.received` |
+| `NFE_OUTBOX_ENABLED`       | Não         | `false`                       | `true` em produção alvo                          | Transação + outbox antes do Rabbit                     |
+| `NFE_XSD_ENABLED`          | Não         | `false`                       | `true`                                           | Validação XSD no worker (requer `NFE_XSD_BASE_PATH`)   |
+| `NFE_QIVE_USE_SUBMIT_INGESTION` | Não  | `false`                       | `true`                                           | Qive também grava `nfe_ingestions` + fila NotaFiscal     |
+| `NFE_IMAP_USE_SUBMIT_INGESTION` | Não  | `false`                       | `true`                                           | IMAP idem                                                |
+| `QIVE_CRON_ENABLED` etc.   | Não         | `false`                       | conforme ops                                     | Ver `app.module.ts` Joi para crons                     |
 | **Email (IMAP)**           |             |                               |                                                  |                                                        |
 | `IMAP_HOST`                | Não***      | `imap.gmail.com`              | `imap.yourdomain.com`                            | Host IMAP. ***Só necessário se usar canal email        |
 | `IMAP_PORT`                | Não         | `993`                         | `993`                                            | Porta IMAP                                             |

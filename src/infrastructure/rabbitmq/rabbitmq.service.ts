@@ -148,6 +148,15 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     await ch.assertQueue(QUEUES.NF_DLQ_PERSIST, { durable: true });
     await ch.bindQueue(QUEUES.NF_DLQ_PERSIST, EXCHANGES.DLQ, 'dlq.persist');
 
+    await ch.assertExchange(EXCHANGES.NF_TOPIC, 'topic', { durable: true });
+    await ch.bindQueue(QUEUES.NF_PROCESS_XML, EXCHANGES.NF_TOPIC, ROUTING_KEYS.NF_RECEIVED);
+    await ch.bindQueue(QUEUES.NF_PROCESS_XML, EXCHANGES.NF_TOPIC, ROUTING_KEYS.INGEST_ACCEPTED);
+    await ch.bindQueue(QUEUES.NF_VALIDATE_BUSINESS, EXCHANGES.NF_TOPIC, ROUTING_KEYS.NF_PROCESSED);
+    await ch.bindQueue(QUEUES.NF_VALIDATE_BUSINESS, EXCHANGES.NF_TOPIC, ROUTING_KEYS.NFE_VALIDATE);
+    await ch.bindQueue(QUEUES.NF_PERSIST, EXCHANGES.NF_TOPIC, ROUTING_KEYS.NF_VALIDATED);
+    await ch.bindQueue(QUEUES.NF_PERSIST, EXCHANGES.NF_TOPIC, ROUTING_KEYS.NFE_PERSIST);
+    await ch.bindQueue(QUEUES.NF_NOTIFY, EXCHANGES.NF_TOPIC, ROUTING_KEYS.NF_PERSISTED);
+
     this.logger.log('RabbitMQ topology setup complete');
   }
 

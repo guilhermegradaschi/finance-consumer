@@ -9,10 +9,12 @@ import { InvoiceEventCreatorService } from './invoice-event-creator.service';
 import { InvoiceEventsImporterService } from './invoice-events-importer.service';
 import { InvoiceEventsProcessorService } from './invoice-events-processor.service';
 import { InvoiceCanceledCreatorService } from './invoice-canceled-creator.service';
+import { NfeEvent } from '../persistence/entities/nfe-event.entity';
+import { NfeEventIngestService } from './nfe-event-ingest.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([InvoiceEvent, InvoiceEventsImport, Invoice, InvoiceItem]),
+    TypeOrmModule.forFeature([InvoiceEvent, InvoiceEventsImport, Invoice, InvoiceItem, NfeEvent]),
     S3Module,
   ],
   providers: [
@@ -20,10 +22,12 @@ import { InvoiceCanceledCreatorService } from './invoice-canceled-creator.servic
     InvoiceEventsImporterService,
     InvoiceEventsProcessorService,
     InvoiceCanceledCreatorService,
+    NfeEventIngestService,
   ],
   exports: [
     InvoiceEventsImporterService,
     InvoiceEventsProcessorService,
+    NfeEventIngestService,
   ],
 })
 export class InvoiceEventsModule {}
