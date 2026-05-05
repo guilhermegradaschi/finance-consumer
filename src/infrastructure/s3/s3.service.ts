@@ -38,6 +38,17 @@ export class S3Service implements OnModuleInit {
     return `nfe/${year}/${month}/${chaveAcesso}.xml`;
   }
 
+  buildNfeRawKeyFromAccessKey(chaveAcesso: string): string {
+    const yy = parseInt(chaveAcesso.substring(2, 4), 10);
+    const fullYear = yy >= 0 && yy <= 99 ? 2000 + yy : yy;
+    const month = chaveAcesso.substring(4, 6);
+    return `nfe/raw/${fullYear}/${month}/${chaveAcesso}.xml`;
+  }
+
+  buildNfeRawPendingKey(ingestionId: string): string {
+    return `nfe/raw/pending/${ingestionId}.xml`;
+  }
+
   async upload(key: string, content: string | Buffer, contentType = 'application/xml'): Promise<void> {
     await this.client.send(
       new PutObjectCommand({
@@ -103,6 +114,14 @@ export class S3Service implements OnModuleInit {
     const key = `invoice-events/${accessKey}-${eventType}.xml`;
     await this.upload(key, xml, 'application/octet-stream');
     return key;
+  }
+
+  buildNfeEventStorageKey(accessKey: string, eventType: string, checksumPrefix: string): string {
+    const yy = parseInt(accessKey.substring(2, 4), 10);
+    const fullYear = yy >= 0 && yy <= 99 ? 2000 + yy : yy;
+    const month = accessKey.substring(4, 6);
+    const suffix = checksumPrefix.slice(0, 16);
+    return `nfe/events/${fullYear}/${month}/${accessKey}/${eventType}_${suffix}.xml`;
   }
 
   async readExternalInvoiceXml(accessKey: string): Promise<string> {

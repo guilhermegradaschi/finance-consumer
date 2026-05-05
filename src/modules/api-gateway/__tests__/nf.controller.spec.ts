@@ -6,12 +6,16 @@ import { NotaFiscalRepository } from '../../persistence/repositories/nota-fiscal
 import { NfProcessingLogRepository } from '../../persistence/repositories/nf-processing-log.repository';
 import { ConfigService } from '@nestjs/config';
 import { NotFoundException } from '@nestjs/common';
+import { GetNfTimelineUseCase } from '../../../application/use-cases/get-nf-timeline.use-case';
+import { AuditLogService } from '../../../application/audit-log.service';
 
 describe('NfController', () => {
   let controller: NfController;
   const mockReceiver = { receive: jest.fn() };
   const mockNfRepo = { findByChaveAcesso: jest.fn(), findWithFilters: jest.fn(), getStatusSummary: jest.fn() };
   const mockLogRepo = { getLogsByChaveAcesso: jest.fn() };
+  const mockTimeline = { execute: jest.fn() };
+  const mockAudit = { log: jest.fn() };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -22,6 +26,8 @@ describe('NfController', () => {
         { provide: NfReceiverService, useValue: mockReceiver },
         { provide: NotaFiscalRepository, useValue: mockNfRepo },
         { provide: NfProcessingLogRepository, useValue: mockLogRepo },
+        { provide: GetNfTimelineUseCase, useValue: mockTimeline },
+        { provide: AuditLogService, useValue: mockAudit },
         { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('test-secret') } },
       ],
     }).compile();

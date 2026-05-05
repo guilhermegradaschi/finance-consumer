@@ -124,8 +124,15 @@ export class EmailConsumerService implements OnModuleInit {
     const names = this.mockFixture.split(',').map((s) => s.trim()).filter(Boolean);
 
     for (const name of names) {
-      const filePath = path.join(process.cwd(), 'test', 'fixtures', `${name}.xml`);
-      const content = await this.readXmlFile(filePath);
+      const candidates = [
+        path.join(process.cwd(), 'src', 'test', 'fixtures', `${name}.xml`),
+        path.join(process.cwd(), 'test', 'fixtures', `${name}.xml`),
+      ];
+      let content: string | null = null;
+      for (const filePath of candidates) {
+        content = await this.readXmlFile(filePath);
+        if (content) break;
+      }
       if (content) results.push(content);
     }
 

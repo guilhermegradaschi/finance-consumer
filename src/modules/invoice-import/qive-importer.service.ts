@@ -1,8 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { QiveClient } from '../../infrastructure/http/clients/qive.client';
 import { ExternalInvoiceCreatorService } from './external-invoice-creator.service';
+import { SubmitIngestionService } from '../nf-receiver/submit-ingestion.service';
+import { NfSource } from '../../common/enums/nf-source.enum';
 import { InvoiceImport } from '../persistence/entities/invoice-import.entity';
 import { InvoiceImportLog } from '../persistence/entities/invoice-import-log.entity';
 import { InvoiceImportStatus } from '../../common/enums/invoice-import-status.enum';
@@ -12,15 +15,20 @@ import { ExternalInvoiceSource } from '../../common/enums/external-invoice-sourc
 @Injectable()
 export class QiveImporterService {
   private readonly logger = new Logger(QiveImporterService.name);
+  private readonly useSubmitIngestion: boolean;
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly qiveClient: QiveClient,
     private readonly externalInvoiceCreator: ExternalInvoiceCreatorService,
+    private readonly submitIngestionService: SubmitIngestionService,
     @InjectRepository(InvoiceImport)
     private readonly invoiceImportRepo: Repository<InvoiceImport>,
     @InjectRepository(InvoiceImportLog)
     private readonly invoiceImportLogRepo: Repository<InvoiceImportLog>,
-  ) {}
+  ) {
+    this.useSubmitIngestion = this.configService.get<boolean>('NFE_QIVE_USE_SUBMIT_INGESTION', false);
+  }
 
   async import(filterStart: Date, filterEnd: Date): Promise<InvoiceImport> {
     this.logger.log('ExternalInvoicesImporterJob Iniciado (Qive)');
@@ -53,6 +61,13 @@ export class QiveImporterService {
           totalReceived++;
           try {
             const xml = Buffer.from(item.xml, 'base64').toString('utf-8');
+            if (this.useSubmitIngestion) {
+              await this.submitIngestionService.submit({
+                xmlContent: xml,
+                source: NfSource.QIVE,
+                externalRef: `qive:${item.access_key}`,
+              });
+            }
             const result = await this.externalInvoiceCreator.create(
               item.access_key,
               xml,

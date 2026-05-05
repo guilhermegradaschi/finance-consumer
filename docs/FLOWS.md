@@ -1,5 +1,14 @@
 # FLOWS.md — Fluxos de Processamento, Erro, Idempotência e DLQ
 
+## 0. Alinhamento com implementação atual (finance-consumer)
+
+- **Staging:** registros em `nfe_ingestions` com `idempotency_key` único; XML bruto em S3 sob `nfe/raw/{yyyy}/{mm}/{access_key}.xml` (upload antes da fila quando `NFE_LEGACY_RABBIT_PAYLOAD=false`).
+- **Mensagem `nf.received`:** pode conter apenas `rawStorageKey`, `ingestionId`, `checksumSha256`, `correlationId` (sem `xmlContent`); o `XmlProcessor` baixa o XML do S3.
+- **Outbox:** com `NFE_OUTBOX_ENABLED=true`, commit atômico `nfe_ingestions` + `outbox_messages`; `OutboxPublisherService` publica no Rabbit em intervalo curto.
+- **Exchange `nf.topic`:** espelha bindings das filas principais com routing keys adicionais (`ingest.accepted`, `nfe.validate`, …); publicação principal segue em `nf.events` até cutover operacional.
+- **XSD:** opcional com `NFE_XSD_ENABLED=true` e `NFE_XSD_BASE_PATH` apontando para os XSDs.
+- **Pipeline legado `NotaFiscal`:** permanece ativo; corte gradual documentado via `NFE_LEGACY_NOTA_FISCAL_ENABLED` (reservado para desligar persistência legada quando o domínio `Invoice` for único).
+
 ## 1. Fluxo Completo de Processamento (Happy Path)
 
 ### 1.1 Diagrama de Sequência
