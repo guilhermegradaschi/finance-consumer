@@ -11,18 +11,19 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copiar apenas package files primeiro (cache de dependências)
-COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copiar source e buildar
 COPY tsconfig.json tsconfig.build.json nest-cli.json ./
 COPY src/ src/
 COPY migrations/ migrations/
 
-RUN npm run build
+RUN pnpm run build
 
 # Remover devDependencies
-RUN npm prune --production
+RUN pnpm prune --prod
 
 # ===== Stage 2: Production =====
 FROM node:20-alpine AS production
@@ -66,15 +67,16 @@ RUN apk add --no-cache libxml2 libxslt libxml2-dev libxslt-dev python3 make g++
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm install
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
 EXPOSE 3000
 EXPOSE 9229
 
-CMD ["npm", "run", "start:dev"]
+CMD ["pnpm", "run", "start:dev"]
 ```
 
 ## 3. Docker Compose (Desenvolvimento Local)
@@ -495,14 +497,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
 
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run test:cov
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint
+      - run: pnpm run test:cov
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4

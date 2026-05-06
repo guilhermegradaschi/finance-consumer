@@ -862,19 +862,19 @@ describe('NF-e API (E2E)', () => {
 
 ```bash
 # Testes unitários
-npm run test
+pnpm run test
 
 # Testes unitários com coverage
-npm run test:cov
+pnpm run test:cov
 
 # Testes de integração
-npm run test:integration
+pnpm run test:integration
 
 # Testes E2E
-npm run test:e2e
+pnpm run test:e2e
 
 # Watch mode
-npm run test:watch
+pnpm run test:watch
 
 # Rodar teste específico
 npx jest --testPathPattern=nf-receiver.service.spec.ts

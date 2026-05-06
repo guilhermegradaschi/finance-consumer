@@ -202,7 +202,7 @@ SEFAZ_API_TOKEN=
 ```typescript
 // src/config/app.config.ts — usado no ConfigModule.forRoot
 import { ConfigModule } from '@nestjs/config';
-import * as Joi from 'joi'; // npm install joi
+import * as Joi from 'joi'; // pnpm add joi
 
 // No AppModule:
 ConfigModule.forRoot({
