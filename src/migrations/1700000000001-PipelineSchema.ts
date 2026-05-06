@@ -27,7 +27,9 @@ export class PipelineSchema1700000000001 implements MigrationInterface {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_invoice_import_logs_import_id ON invoice_import_logs(invoice_import_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_invoice_import_logs_import_id ON invoice_import_logs(invoice_import_id)`,
+    );
 
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS external_invoices (
@@ -54,10 +56,18 @@ export class PipelineSchema1700000000001 implements MigrationInterface {
     `);
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_external_invoices_status ON external_invoices(status)`);
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_external_invoices_date ON external_invoices(date)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_external_invoices_operation ON external_invoices(operation)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_external_invoices_buyer_cnpj ON external_invoices(buyer_cnpj)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_external_invoices_seller_cnpj ON external_invoices(seller_cnpj)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_external_invoices_import_id ON external_invoices(invoice_import_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_external_invoices_operation ON external_invoices(operation)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_external_invoices_buyer_cnpj ON external_invoices(buyer_cnpj)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_external_invoices_seller_cnpj ON external_invoices(seller_cnpj)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_external_invoices_import_id ON external_invoices(invoice_import_id)`,
+    );
 
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS invoices (
@@ -94,7 +104,9 @@ export class PipelineSchema1700000000001 implements MigrationInterface {
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_invoices_date ON invoices(date)`);
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_invoices_buyer_seller ON invoices(buyer_id, seller_id)`);
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_invoices_reference_date ON invoices(reference_date)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_invoices_external_invoice_id ON invoices(external_invoice_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_invoices_external_invoice_id ON invoices(external_invoice_id)`,
+    );
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_invoices_buyer_cnpj ON invoices(buyer_cnpj)`);
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_invoices_seller_cnpj ON invoices(seller_cnpj)`);
 
@@ -186,7 +198,9 @@ export class PipelineSchema1700000000001 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TRIGGER IF EXISTS update_invoice_events_imports_updated_at ON invoice_events_imports`);
+    await queryRunner.query(
+      `DROP TRIGGER IF EXISTS update_invoice_events_imports_updated_at ON invoice_events_imports`,
+    );
     await queryRunner.query(`DROP TRIGGER IF EXISTS update_invoice_imports_updated_at ON invoice_imports`);
     await queryRunner.query(`DROP TRIGGER IF EXISTS update_invoice_events_updated_at ON invoice_events`);
     await queryRunner.query(`DROP TRIGGER IF EXISTS update_invoices_updated_at ON invoices`);

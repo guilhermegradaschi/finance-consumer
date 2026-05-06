@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { CircuitBreakerFactory } from '../circuit-breaker.factory';
+import { CircuitBreakerFactory } from '@infra/http/circuit-breaker.factory';
 import CircuitBreaker = require('opossum');
 
 export interface SellerHeadquarter {

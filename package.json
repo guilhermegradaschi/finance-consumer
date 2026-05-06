@@ -10,7 +10,9 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "set TS_NODE_PROJECT=tsconfig.paths.dist.json&& node -r tsconfig-paths/register dist/main",
+    "start:prod:api": "set TS_NODE_PROJECT=tsconfig.paths.dist.json&& node -r tsconfig-paths/register dist/main-api",
+    "start:prod:ingestion": "set TS_NODE_PROJECT=tsconfig.paths.dist.json&& node -r tsconfig-paths/register dist/main-ingestion",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -116,6 +118,10 @@
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^@context/(.*)$": "<rootDir>/src/contexts/$1",
+      "^@infra/(.*)$": "<rootDir>/src/infrastructure/$1",
+      "^@shared/(.*)$": "<rootDir>/src/shared/$1",
       "^src/(.*)$": "<rootDir>/src/$1"
     },
     "coverageThreshold": {

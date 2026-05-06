@@ -163,7 +163,9 @@ export class InitialSchema1700000000000 implements MigrationInterface {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_nf_pagamento_nota_fiscal_id ON nf_pagamento(nota_fiscal_id)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_nf_pagamento_nota_fiscal_id ON nf_pagamento(nota_fiscal_id)`,
+    );
 
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS nf_processing_log (
@@ -179,9 +181,13 @@ export class InitialSchema1700000000000 implements MigrationInterface {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_nf_processing_log_chave_acesso ON nf_processing_log(chave_acesso)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_nf_processing_log_chave_acesso ON nf_processing_log(chave_acesso)`,
+    );
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_nf_processing_log_stage ON nf_processing_log(stage)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_nf_processing_log_created_at ON nf_processing_log(created_at DESC)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_nf_processing_log_created_at ON nf_processing_log(created_at DESC)`,
+    );
 
     await queryRunner.query(`
       CREATE OR REPLACE FUNCTION update_updated_at_column()

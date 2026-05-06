@@ -20,9 +20,13 @@ export class NfeIngestions1700000000002 implements MigrationInterface {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE UNIQUE INDEX IF NOT EXISTS uq_nfe_ingestions_idempotency ON nfe_ingestions(idempotency_key)`);
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX IF NOT EXISTS uq_nfe_ingestions_idempotency ON nfe_ingestions(idempotency_key)`,
+    );
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_nfe_ingestions_access_key ON nfe_ingestions(access_key)`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_nfe_ingestions_created_at ON nfe_ingestions(created_at DESC)`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_nfe_ingestions_created_at ON nfe_ingestions(created_at DESC)`,
+    );
 
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS outbox_messages (
@@ -39,7 +43,9 @@ export class NfeIngestions1700000000002 implements MigrationInterface {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_outbox_messages_status ON outbox_messages(status) WHERE status = 'pending'`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS idx_outbox_messages_status ON outbox_messages(status) WHERE status = 'pending'`,
+    );
 
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS nfe_events (
@@ -58,7 +64,9 @@ export class NfeIngestions1700000000002 implements MigrationInterface {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE UNIQUE INDEX IF NOT EXISTS uq_nfe_events_idempotency ON nfe_events(idempotency_key)`);
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX IF NOT EXISTS uq_nfe_events_idempotency ON nfe_events(idempotency_key)`,
+    );
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_nfe_events_access_key ON nfe_events(access_key)`);
   }
 
