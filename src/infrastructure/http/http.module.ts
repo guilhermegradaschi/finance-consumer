@@ -1,9 +1,9 @@
 import { Global, Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
-import { CircuitBreakerFactory } from './circuit-breaker.factory';
-import { QiveClient } from './clients/qive.client';
-import { BuyerApiClient } from './clients/buyer-api.client';
-import { SellerApiClient } from './clients/seller-api.client';
+import { CircuitBreakerFactory } from '@infra/http/circuit-breaker.factory';
+import { QiveClient } from '@infra/http/clients/qive.client';
+import { BuyerApiClient } from '@infra/http/clients/buyer-api.client';
+import { SellerApiClient } from '@infra/http/clients/seller-api.client';
 
 @Global()
 @Module({

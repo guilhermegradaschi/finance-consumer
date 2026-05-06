@@ -1,4 +1,4 @@
-import { CircuitBreakerFactory } from '../circuit-breaker.factory';
+import { CircuitBreakerFactory } from '@infra/http/circuit-breaker.factory';
 
 describe('CircuitBreakerFactory', () => {
   it('should create a breaker with the given name and run the action on fire', async () => {

@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { CircuitBreakerFactory } from '../circuit-breaker.factory';
+import { CircuitBreakerFactory } from '@infra/http/circuit-breaker.factory';
 import CircuitBreaker = require('opossum');
 
 export interface QiveNfResponse {
@@ -84,9 +84,7 @@ export class QiveClient implements OnModuleInit {
       if (response.page?.next) {
         const nextUrl = new URL(response.page.next);
         const nextCursor = nextUrl.searchParams.get('cursor');
-        url = nextCursor
-          ? `${this.apiUrl}/events/nfe?limit=50&type=110111,110112&cursor=${nextCursor}`
-          : '';
+        url = nextCursor ? `${this.apiUrl}/events/nfe?limit=50&type=110111,110112&cursor=${nextCursor}` : '';
       } else {
         url = '';
       }
@@ -96,16 +94,12 @@ export class QiveClient implements OnModuleInit {
   }
 
   private async doFetchNfe(url: string): Promise<QiveNfResponse> {
-    const { data } = await firstValueFrom(
-      this.httpService.get<QiveNfResponse>(url, { headers: this.headers }),
-    );
+    const { data } = await firstValueFrom(this.httpService.get<QiveNfResponse>(url, { headers: this.headers }));
     return data;
   }
 
   private async doFetchEvents(url: string): Promise<QiveEventResponse> {
-    const { data } = await firstValueFrom(
-      this.httpService.get<QiveEventResponse>(url, { headers: this.headers }),
-    );
+    const { data } = await firstValueFrom(this.httpService.get<QiveEventResponse>(url, { headers: this.headers }));
     return data;
   }
 }
