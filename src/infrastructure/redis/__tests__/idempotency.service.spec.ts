@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { IdempotencyService } from '../idempotency.service';
-import { RedisService } from '../redis.service';
+import { IdempotencyService } from '@infra/redis/idempotency.service';
+import { RedisService } from '@infra/redis/redis.service';
 
 describe('IdempotencyService', () => {
   let service: IdempotencyService;
@@ -68,11 +68,7 @@ describe('IdempotencyService', () => {
     it('should update existing key data', async () => {
       redisService.set.mockResolvedValue('OK');
       await service.update('key1', { status: 'COMPLETED' });
-      expect(redisService.set).toHaveBeenCalledWith(
-        'idempotency:key1',
-        JSON.stringify({ status: 'COMPLETED' }),
-        86400,
-      );
+      expect(redisService.set).toHaveBeenCalledWith('idempotency:key1', JSON.stringify({ status: 'COMPLETED' }), 86400);
     });
   });
 

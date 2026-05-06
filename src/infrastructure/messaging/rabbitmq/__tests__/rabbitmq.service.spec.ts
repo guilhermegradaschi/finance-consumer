@@ -24,7 +24,7 @@ jest.mock('amqplib', () => ({
   connect: jest.fn().mockImplementation(() => Promise.resolve(mockConnection)),
 }));
 
-import { RabbitMQService } from '../rabbitmq.service';
+import { RabbitMQService } from '@infra/messaging/rabbitmq/rabbitmq.service';
 
 describe('RabbitMQService', () => {
   let service: RabbitMQService;

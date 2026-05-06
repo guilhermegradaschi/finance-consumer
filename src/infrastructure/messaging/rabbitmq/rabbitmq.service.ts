@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as amqplib from 'amqplib';
-import { EXCHANGES, QUEUES, ROUTING_KEYS, RETRY_CONFIG } from '../../common/constants/queues.constants';
+import { EXCHANGES, QUEUES, ROUTING_KEYS, RETRY_CONFIG } from '@shared/constants/queues.constants';
 
 type AmqpConnection = amqplib.ChannelModel;
 type AmqpChannel = amqplib.ConfirmChannel;
@@ -59,9 +59,13 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     this.connection.on('close', () => {
       this.connected = false;
       this.logger.warn('RabbitMQ connection closed, reconnecting...');
-      setTimeout(() => this.connect().then(() => this.setupTopology()).catch((e) =>
-        this.logger.error(`Reconnection failed: ${(e as Error).message}`),
-      ), 5000);
+      setTimeout(
+        () =>
+          this.connect()
+            .then(() => this.setupTopology())
+            .catch((e) => this.logger.error(`Reconnection failed: ${(e as Error).message}`)),
+        5000,
+      );
     });
 
     this.connection.on('error', (err: Error) => {
@@ -192,7 +196,12 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     return this.channel;
   }
 
-  async publish(exchange: string, routingKey: string, message: Record<string, unknown>, headers?: Record<string, unknown>): Promise<void> {
+  async publish(
+    exchange: string,
+    routingKey: string,
+    message: Record<string, unknown>,
+    headers?: Record<string, unknown>,
+  ): Promise<void> {
     const ch = this.ensureChannel();
     const content = Buffer.from(JSON.stringify(message));
     ch.publish(exchange, routingKey, content, {
@@ -221,7 +230,9 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
 
   async publishToDlq(dlqRoutingKey: string, message: Record<string, unknown>, error: string): Promise<void> {
     const ch = this.ensureChannel();
-    const content = Buffer.from(JSON.stringify({ ...message, dlqError: error, dlqTimestamp: new Date().toISOString() }));
+    const content = Buffer.from(
+      JSON.stringify({ ...message, dlqError: error, dlqTimestamp: new Date().toISOString() }),
+    );
     ch.publish(EXCHANGES.DLQ, dlqRoutingKey, content, {
       persistent: true,
       contentType: 'application/json',

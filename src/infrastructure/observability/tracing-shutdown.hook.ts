@@ -1,5 +1,5 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { shutdownTracing } from './tracing';
+import { shutdownTracing } from '@infra/observability/tracing';
 
 @Injectable()
 export class TracingShutdownHook implements OnApplicationShutdown {
