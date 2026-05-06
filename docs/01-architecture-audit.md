@@ -530,7 +530,7 @@ export class EmailConsumerService {
 **Opção A - Remover stubs:**
 ```bash
 rm -rf src/modules/email-consumer src/modules/s3-listener
-npm uninstall imap mailparser @aws-sdk/client-sqs
+pnpm remove imap mailparser @aws-sdk/client-sqs
 # Atualizar app.module.ts
 ```
 

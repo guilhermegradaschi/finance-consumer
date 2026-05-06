@@ -529,49 +529,49 @@ describe('NomeService', () => {
 nest new finance-consumer
 
 # Instalar dependências
-npm install @nestjs/typeorm typeorm pg
-npm install @nestjs/config
-npm install @golevelup/nestjs-rabbitmq
-npm install @nestjs/swagger
-npm install class-validator class-transformer
-npm install ioredis
-npm install @aws-sdk/client-s3
+pnpm add @nestjs/typeorm typeorm pg
+pnpm add @nestjs/config
+pnpm add @golevelup/nestjs-rabbitmq
+pnpm add @nestjs/swagger
+pnpm add class-validator class-transformer
+pnpm add ioredis
+pnpm add @aws-sdk/client-s3
 
 # Dev dependencies
-npm install -D @types/node
-npm install -D @nestjs/testing
-npm install -D jest
-npm install -D supertest
+pnpm add -D @types/node
+pnpm add -D @nestjs/testing
+pnpm add -D jest
+pnpm add -D supertest
 ```
 
 ### Desenvolvimento
 ```bash
 # Rodar em desenvolvimento
-npm run start:dev
+pnpm run start:dev
 
 # Rodar testes
-npm run test
-npm run test:watch
-npm run test:cov
+pnpm run test
+pnpm run test:watch
+pnpm run test:cov
 
 # Rodar testes E2E
-npm run test:e2e
+pnpm run test:e2e
 
 # Lint
-npm run lint
-npm run format
+pnpm run lint
+pnpm run format
 ```
 
 ### Database
 ```bash
 # Criar migration
-npm run typeorm migration:create -- -n NomeMigration
+pnpm run typeorm migration:create -- -n NomeMigration
 
 # Rodar migrations
-npm run typeorm migration:run
+pnpm run typeorm migration:run
 
 # Reverter migration
-npm run typeorm migration:revert
+pnpm run typeorm migration:revert
 ```
 
 ---
@@ -585,10 +585,10 @@ npm run typeorm migration:revert
 **Solução**: Verificar RABBITMQ_URL, verificar se RabbitMQ está rodando, verificar management plugin habilitado.
 
 ### Problema: Testes falhando
-**Solução**: Verificar mocks, verificar setup de teste, verificar imports, rodar `npm run test -- --verbose` para detalhes.
+**Solução**: Verificar mocks, verificar setup de teste, verificar imports, rodar `pnpm run test -- --verbose` para detalhes.
 
 ### Problema: Build falha
-**Solução**: Verificar tipos TypeScript, verificar imports circulares, rodar `npm install` e limpar `dist/`.
+**Solução**: Verificar tipos TypeScript, verificar imports circulares, rodar `pnpm install` e limpar `dist/`.
 
 ### Problema: Consumer não recebe mensagens
 **Solução**: Verificar exchange/queue/routing key, verificar bindings no RabbitMQ Management UI, verificar se consumer está registrado.

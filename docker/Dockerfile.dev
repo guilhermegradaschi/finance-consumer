@@ -2,13 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+
 RUN apk add --no-cache python3 make g++ libxml2-dev libxslt-dev
 
-COPY package*.json ./
-RUN npm install
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start:dev"]
+CMD ["pnpm", "run", "start:dev"]

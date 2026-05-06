@@ -132,7 +132,7 @@
   - Origem: docs/02-code-quality-audit.md (seção "Any Types e Type Assertions"), docs/05-agent-task-list.md (TASK-210)
   - Motivo: `parseXml()` retorna `Promise<any>`, type assertions perigosos (`result as NfDocument`), non-null assertions (`request.user!`)
   - Impacto: médio
-  - **Parcial:** `.eslintrc.js` com `@typescript-eslint/no-explicit-any`: `error`. **Pendente:** varredura completa de assertions e `!`; `npm run lint` pode falhar no ESLint 9 até migração para `eslint.config.js`.
+  - **Parcial:** `.eslintrc.js` com `@typescript-eslint/no-explicit-any`: `error`. **Pendente:** varredura completa de assertions e `!`; `pnpm run lint` pode falhar no ESLint 9 até migração para `eslint.config.js`.
 
 - [x] Implementar rate limiting por usuário (baseado em JWT `sub`) via Redis sliding window, além do rate limit global existente
   - Origem: docs/04-refactor-roadmap.md (tarefa 3.9), docs/07-risk-register.md (RISK-009)
@@ -241,9 +241,9 @@
   - Motivo: Todos os pods podem cair em um único node; falha do node derruba 100% da capacidade
   - Impacto: médio
 
-- [ ] Reescrever `Dockerfile` como multi-stage build: stage builder com `npm ci`, stage production com `node:20.10-alpine`, non-root user, `dumb-init`, healthcheck Docker
+- [ ] Reescrever `Dockerfile` como multi-stage build: stage builder com `pnpm install --frozen-lockfile`, stage production com `node:20.10-alpine`, non-root user, `dumb-init`, healthcheck Docker
   - Origem: docs/03-infra-audit.md (seção "Dockerfile")
-  - Motivo: Dockerfile atual usa single-stage (`node:20` full ~1GB), roda como root, usa `npm install` (não determinístico) e não tem healthcheck
+  - Motivo: Dockerfile atual usa single-stage (`node:20` full ~1GB), roda como root, usa instalação sem lockfile rígido (não determinístico) e não tem healthcheck
   - Impacto: alto
 
 - [x] Criar `.dockerignore` para excluir `.git`, `node_modules`, `coverage`, `.env*`, `*.md`, `docker-compose*`
@@ -264,11 +264,11 @@
   - Impacto: alto
   - Implementação: job `security-scan` em `.github/workflows/ci-cd.yml` com `aquasecurity/trivy-action` (filesystem scan, severity HIGH+CRITICAL, exit-code 1).
 
-- [x] Adicionar `npm audit --audit-level=high` como step no CI pipeline
+- [x] Adicionar `pnpm audit --audit-level=high` como step no CI pipeline
   - Origem: docs/03-infra-audit.md (tabela de problemas no CI/CD)
-  - Motivo: CVEs em dependências npm não são verificadas — ausência de scan de dependências
+  - Motivo: CVEs em dependências não são verificadas — ausência de scan de dependências
   - Impacto: alto
-  - Implementação: step `npm audit --audit-level=high` no job `lint-and-test` de `.github/workflows/ci-cd.yml`.
+  - Implementação: step `pnpm audit --audit-level=high` no job `lint-and-test` de `.github/workflows/ci-cd.yml`.
 
 - [ ] Adicionar lint de Dockerfile (hadolint) como step no CI pipeline
   - Origem: docs/03-infra-audit.md (tabela de problemas no CI/CD)
@@ -279,7 +279,7 @@
   - Origem: docs/03-infra-audit.md (tabela de problemas no CI/CD)
   - Motivo: CI atual não testa integração com message broker — regressões em messaging passam despercebidas
   - Impacto: alto
-  - Implementação: service container `rabbitmq:3.13-management-alpine` + step `npm run test:integration` no job `lint-and-test` de `.github/workflows/ci-cd.yml`.
+  - Implementação: service container `rabbitmq:3.13-management-alpine` + step `pnpm run test:integration` no job `lint-and-test` de `.github/workflows/ci-cd.yml`.
 
 - [x] Configurar cache de Docker layers no CI (`cache-from: type=gha`) via Docker Buildx
   - Origem: docs/03-infra-audit.md (tabela de problemas no CI/CD)
@@ -506,9 +506,9 @@
   - Origem: docs/06-development-rules.md (seção "ESLint Rules Obrigatórias"), docs/02-code-quality-audit.md (seção "ESLint Rules Recomendadas")
   - Motivo: Regras documentadas no `06-development-rules.md` mas possivelmente não aplicadas no `.eslintrc.js` real
   - Impacto: médio
-  - **Parcial (Fase 2):** `@typescript-eslint/no-explicit-any`: `error` em `.eslintrc.js`. **Pendente:** demais regras listadas; ESLint 9 exige `eslint.config.js` para `npm run lint` funcionar.
+  - **Parcial (Fase 2):** `@typescript-eslint/no-explicit-any`: `error` em `.eslintrc.js`. **Pendente:** demais regras listadas; ESLint 9 exige `eslint.config.js` para `pnpm run lint` funcionar.
 
-- [ ] Remover dependências npm não utilizadas (`imap`, `mailparser`, `@aws-sdk/client-sqs`) se stubs forem removidos
+- [ ] Remover dependências não utilizadas (`imap`, `mailparser`, `@aws-sdk/client-sqs`) se stubs forem removidos
   - Origem: docs/01-architecture-audit.md (seção "Stubs Vazios no Codebase")
   - Motivo: Dependências instaladas sem uso aumentam superfície de ataque e tamanho da imagem
   - Impacto: baixo

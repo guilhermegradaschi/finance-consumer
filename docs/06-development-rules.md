@@ -280,7 +280,7 @@ function isNfDocument(value: unknown): value is NfDocument {
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-// 2. External packages (npm)
+// 2. External packages (pnpm)
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as xml2js from 'xml2js';

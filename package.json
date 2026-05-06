@@ -4,6 +4,7 @@
   "description": "Sistema de Processamento de Notas Fiscais Eletrônicas (NF-e)",
   "private": true,
   "license": "UNLICENSED",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\"",
