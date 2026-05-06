@@ -27,7 +27,7 @@ export class NfeXsdValidationService implements OnModuleInit {
     this.libxml = tryLoadLibxmljs2();
     if (!this.libxml) {
       this.logger.warn(
-        'libxmljs2 not installed or failed to load — XSD validation disabled (optional: npm install libxmljs2 on a supported platform)',
+        'libxmljs2 not installed or failed to load — XSD validation disabled (optional: pnpm add libxmljs2 on a supported platform)',
       );
       return;
     }
