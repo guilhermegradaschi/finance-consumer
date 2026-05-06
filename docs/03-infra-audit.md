@@ -77,10 +77,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run test:cov
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint
+      - run: pnpm run test:cov
 
   build-docker:
     needs: lint-and-test
@@ -105,7 +105,7 @@ jobs:
 |---|----------|---------|------------|
 | 1 | Falta job de security scan (SAST/DAST) | Vulnerabilidades não detectadas | 🔴 Alto |
 | 2 | Falta lint de Dockerfile | Best practices não validadas | 🟡 Médio |
-| 3 | Falta scan de dependências (npm audit) | CVEs em deps | 🔴 Alto |
+| 3 | Falta scan de dependências (pnpm audit) | CVEs em deps | 🔴 Alto |
 | 4 | Falta teste de integração com RabbitMQ | Regressões em messaging | 🟠 Alto |
 | 5 | Falta step de deploy automático | Deploy manual propenso a erro | 🟡 Médio |
 | 6 | Secrets sem rotação automática | Credential exposure | 🟠 Alto |
@@ -138,10 +138,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run format:check
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint
+      - run: pnpm run format:check
 
   # ============================================
   # STAGE 2: SECURITY SCANNING
@@ -150,8 +150,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run npm audit
-        run: npm audit --audit-level=high
+      - name: Run pnpm audit
+        run: pnpm audit --audit-level=high
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -173,9 +173,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run test:cov
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run test:cov
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
@@ -220,9 +220,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run test:integration
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run test:integration
         env:
           DB_HOST: localhost
           DB_PORT: 5432
@@ -324,10 +324,10 @@ FROM node:20
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install  # Não usa npm ci
+RUN pnpm install  # Sem lockfile rígido (preferir pnpm install --frozen-lockfile em CI/Docker)
 
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
@@ -337,7 +337,7 @@ CMD ["node", "dist/main.js"]
 |---|----------|---------|
 | 1 | `node:20` sem tag específica | Builds não reproduzíveis |
 | 2 | Root user | Vulnerabilidade de segurança |
-| 3 | `npm install` em vez de `npm ci` | Deps não determinísticas |
+| 3 | `pnpm install` sem `--frozen-lockfile` em imagens/CI | Deps não determinísticas |
 | 4 | Single-stage build | Imagem grande (~1GB) |
 | 5 | Sem healthcheck | Container sem self-check |
 | 6 | Copia tudo (inclui .git, node_modules dev) | Imagem inflada |
@@ -360,16 +360,16 @@ WORKDIR /app
 COPY --chown=nestjs:nodejs package*.json ./
 
 # Install ALL dependencies (including devDependencies for build)
-RUN npm ci --ignore-scripts
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy source code
 COPY --chown=nestjs:nodejs . .
 
 # Build application
-RUN npm run build
+RUN pnpm run build
 
 # Prune dev dependencies
-RUN npm prune --production
+RUN pnpm prune --prod
 
 # ============================================
 # STAGE 2: Production

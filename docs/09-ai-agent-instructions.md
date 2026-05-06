@@ -265,9 +265,9 @@ export class MyResponseDto {
 ### Checklist Pós-Edição
 
 ```markdown
-- [ ] Código compila sem erros (npm run build)
-- [ ] Lint passa (npm run lint)
-- [ ] Testes existentes passam (npm run test)
+- [ ] Código compila sem erros (pnpm run build)
+- [ ] Lint passa (pnpm run lint)
+- [ ] Testes existentes passam (pnpm run test)
 - [ ] Novos testes adicionados para nova funcionalidade
 - [ ] Tipos explícitos em todas as funções
 - [ ] Sem any types
@@ -283,19 +283,19 @@ export class MyResponseDto {
 
 ```bash
 # 1. Instalar dependências
-npm ci
+pnpm install --frozen-lockfile
 
 # 2. Verificar lint
-npm run lint
+pnpm run lint
 
 # 3. Verificar tipos
-npm run build
+pnpm run build
 
 # 4. Rodar testes unitários
-npm run test
+pnpm run test
 
 # 5. Rodar testes com cobertura
-npm run test:cov
+pnpm run test:cov
 
 # 6. Verificar cobertura mínima
 # Cobertura deve ser >= 85%
@@ -308,13 +308,13 @@ npm run test:cov
 docker-compose up -d postgres redis rabbitmq
 
 # Rodar migrations
-npm run migration:run
+pnpm run migration:run
 
 # Rodar testes de integração
-npm run test:integration
+pnpm run test:integration
 
 # Testar manualmente (opcional)
-npm run start:dev
+pnpm run start:dev
 curl http://localhost:3000/health/ready
 ```
 
@@ -324,9 +324,9 @@ Todo PR deve atender:
 
 | Critério | Verificação |
 |----------|-------------|
-| Compila | `npm run build` sem erros |
-| Lint | `npm run lint` sem warnings |
-| Testes | `npm run test` 100% passando |
+| Compila | `pnpm run build` sem erros |
+| Lint | `pnpm run lint` sem warnings |
+| Testes | `pnpm run test` 100% passando |
 | Cobertura | >= 85% para novos arquivos |
 | Tipos | Zero `any` explícito |
 | Docs | JSDoc em interfaces públicas |
@@ -354,9 +354,9 @@ Quando receber uma task do `05-agent-task-list.md`, siga este fluxo:
 [Testes criados/atualizados]
 
 ### 4. Validação
-- [ ] npm run build ✓
-- [ ] npm run lint ✓
-- [ ] npm run test ✓
+- [ ] pnpm run build ✓
+- [ ] pnpm run lint ✓
+- [ ] pnpm run test ✓
 - [ ] Cobertura >= 85% ✓
 
 ### 5. Arquivos Modificados
@@ -431,9 +431,9 @@ describe('authConfig', () => {
 ```
 
 ### 4. Validação
-- [x] npm run build ✓
-- [x] npm run lint ✓
-- [x] npm run test ✓
+- [x] pnpm run build ✓
+- [x] pnpm run lint ✓
+- [x] pnpm run test ✓
 - [x] Cobertura >= 85% ✓
 
 ### 5. Arquivos Modificados
@@ -450,45 +450,45 @@ describe('authConfig', () => {
 
 ```bash
 # Iniciar em modo desenvolvimento
-npm run start:dev
+pnpm run start:dev
 
 # Verificar tipos sem compilar
-npm run typecheck
+pnpm run typecheck
 
 # Formatar código
-npm run format
+pnpm run format
 
 # Gerar nova migration
-npm run migration:generate -- -n NomeDaMigration
+pnpm run migration:generate -- -n NomeDaMigration
 
 # Reverter última migration
-npm run migration:revert
+pnpm run migration:revert
 ```
 
 ### Testes
 
 ```bash
 # Rodar testes de um arquivo específico
-npm run test -- path/to/file.spec.ts
+pnpm run test -- path/to/file.spec.ts
 
 # Rodar testes em modo watch
-npm run test:watch
+pnpm run test:watch
 
 # Rodar testes com verbose
-npm run test -- --verbose
+pnpm run test -- --verbose
 
 # Rodar apenas testes que falharam
-npm run test -- --onlyFailures
+pnpm run test -- --onlyFailures
 ```
 
 ### Debug
 
 ```bash
 # Iniciar com debug
-npm run start:debug
+pnpm run start:debug
 
 # Ver logs estruturados
-npm run start:dev 2>&1 | jq .
+pnpm run start:dev 2>&1 | jq .
 ```
 
 ---
@@ -557,7 +557,7 @@ const result = await this.repository.findOne({ where: { id: userId } });
 
 # Limpar cache
 rm -rf dist node_modules/.cache
-npm run build
+pnpm run build
 ```
 
 ### Erro: "Type X is not assignable to type Y"

@@ -42,39 +42,39 @@ Fase 5: Deploy (Dia 10)
 
 ```bash
 # Instalar NestJS CLI
-npm i -g @nestjs/cli
+pnpm add -g @nestjs/cli
 
 # Criar projeto
-nest new nf-processor --strict --package-manager npm
+nest new nf-processor --strict --package-manager pnpm
 
 cd nf-processor
 
 # Instalar dependências core
-npm install @nestjs/config @nestjs/typeorm @nestjs/swagger @nestjs/axios @nestjs/schedule @nestjs/throttler
-npm install typeorm pg
-npm install ioredis
-npm install amqplib
-npm install @aws-sdk/client-s3 @aws-sdk/client-sqs
-npm install class-validator class-transformer
-npm install jsonwebtoken
-npm install libxmljs2
-npm install mailparser imap
-npm install opossum
-npm install uuid
-npm install swagger-ui-express
+pnpm add @nestjs/config @nestjs/typeorm @nestjs/swagger @nestjs/axios @nestjs/schedule @nestjs/throttler
+pnpm add typeorm pg
+pnpm add ioredis
+pnpm add amqplib
+pnpm add @aws-sdk/client-s3 @aws-sdk/client-sqs
+pnpm add class-validator class-transformer
+pnpm add jsonwebtoken
+pnpm add libxmljs2
+pnpm add mailparser imap
+pnpm add opossum
+pnpm add uuid
+pnpm add swagger-ui-express
 
 # Dependências de tipos
-npm install -D @types/amqplib @types/imap @types/jsonwebtoken @types/uuid @types/opossum
+pnpm add -D @types/amqplib @types/imap @types/jsonwebtoken @types/uuid @types/opossum
 
 # OpenTelemetry
-npm install @opentelemetry/sdk-node @opentelemetry/api
-npm install @opentelemetry/exporter-trace-otlp-http @opentelemetry/exporter-metrics-otlp-http
-npm install @opentelemetry/sdk-metrics
-npm install @opentelemetry/auto-instrumentations-node
-npm install @opentelemetry/resources @opentelemetry/semantic-conventions
+pnpm add @opentelemetry/sdk-node @opentelemetry/api
+pnpm add @opentelemetry/exporter-trace-otlp-http @opentelemetry/exporter-metrics-otlp-http
+pnpm add @opentelemetry/sdk-metrics
+pnpm add @opentelemetry/auto-instrumentations-node
+pnpm add @opentelemetry/resources @opentelemetry/semantic-conventions
 
 # Dev dependencies
-npm install -D @testcontainers/postgresql testcontainers
+pnpm add -D @testcontainers/postgresql testcontainers
 ```
 
 ### 2.2 Configurar TypeScript strict
@@ -149,7 +149,7 @@ cp .env.example .env.development
 **Como testar:**
 ```bash
 cd docker && docker-compose up -d
-npm run start:dev
+pnpm run start:dev
 curl http://localhost:3000/health
 # Esperado: {"status":"healthy","checks":{"redis":"ok"}}
 ```
@@ -177,7 +177,7 @@ docker exec -it docker-postgres-1 psql -U nf_user -d nf_processor -c "\dt"
 
 **Como testar:**
 ```bash
-npm run start:dev
+pnpm run start:dev
 # Verificar no RabbitMQ Management UI:
 # http://localhost:15672 (nf_user/nf_password)
 # → Exchanges: 3 exchanges
@@ -258,9 +258,9 @@ docker start docker-minio-1
 
 ### ✅ Milestone 8: Testes passando
 
-- [ ] `npm run test` → testes unitários passam
-- [ ] `npm run test:cov` → coverage > 80%
-- [ ] `npm run test:e2e` → testes E2E passam
+- [ ] `pnpm run test` → testes unitários passam
+- [ ] `pnpm run test:cov` → coverage > 80%
+- [ ] `pnpm run test:e2e` → testes E2E passam
 
 ### ✅ Milestone 9: Deploy ready
 
