@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["dist/*"],
+      "@context/*": ["dist/contexts/*"],
+      "@infra/*": ["dist/infrastructure/*"],
+      "@shared/*": ["dist/shared/*"]
+    }
+  }
+}
+
