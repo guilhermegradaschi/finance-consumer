@@ -41,15 +41,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'pnpm'
 
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run build
-      - run: npm run test -- --coverage
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint
+      - run: pnpm run build
+      - run: pnpm run test -- --coverage
 
       - uses: actions/upload-artifact@v4
         with:
