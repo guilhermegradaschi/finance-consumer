@@ -23,7 +23,8 @@ Cada estágio publica eventos no RabbitMQ, com retry automático (backoff expone
 
 ## Pré-requisitos
 
-- Node.js 20+
+- Node.js 20+ (Corepack habilitado para usar o pnpm definido em `package.json`: `corepack enable`)
+- pnpm (via Corepack ou [instalação oficial](https://pnpm.io/installation))
 - Docker e Docker Compose
 
 ## Setup Local
@@ -33,13 +34,13 @@ Cada estágio publica eventos no RabbitMQ, com retry automático (backoff expone
 docker compose -f docker/docker-compose.yml up -d
 
 # Instalar dependências
-npm install
+pnpm install
 
 # Rodar migrations (requer PostgreSQL rodando)
-npm run typeorm migration:run
+pnpm run typeorm migration:run
 
 # Iniciar em modo desenvolvimento
-npm run start:dev
+pnpm run start:dev
 ```
 
 ## Endpoints
@@ -60,9 +61,9 @@ Swagger UI disponível em: `http://localhost:3000/api/docs`
 ## Testes
 
 ```bash
-npm run test          # Unit tests
-npm run test:cov      # Coverage
-npm run test:e2e      # E2E tests
+pnpm run test          # Unit tests
+pnpm run test:cov      # Coverage
+pnpm run test:e2e      # E2E tests
 ```
 
 ## Docker Build (Produção)
