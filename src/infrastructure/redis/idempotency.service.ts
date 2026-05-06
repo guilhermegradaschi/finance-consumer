@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { RedisService } from './redis.service';
+import { RedisService } from '@infra/redis/redis.service';
 
 export interface IdempotencyCheckResult {
   isDuplicate: boolean;

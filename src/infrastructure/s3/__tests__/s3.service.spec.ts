@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { S3Service } from '../s3.service';
+import { S3Service } from '@infra/s3/s3.service';
 
 const mockSend = jest.fn();
 

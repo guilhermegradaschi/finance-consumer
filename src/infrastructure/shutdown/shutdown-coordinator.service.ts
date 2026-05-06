@@ -1,9 +1,9 @@
-import { BeforeApplicationShutdown, Injectable, Logger } from '@nestjs/common';
+import { BeforeApplicationShutdown, Injectable, Logger, Optional } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import type { Server } from 'http';
-import { HealthService } from '../health/health.service';
-import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
+import { HealthService } from '@context/platform/infrastructure/health/health.service';
+import { RabbitMQService } from '@infra/messaging/rabbitmq/rabbitmq.service';
 
 @Injectable()
 export class ShutdownCoordinatorService implements BeforeApplicationShutdown {
@@ -12,8 +12,8 @@ export class ShutdownCoordinatorService implements BeforeApplicationShutdown {
   constructor(
     private readonly healthService: HealthService,
     private readonly rabbitMQService: RabbitMQService,
-    private readonly httpAdapterHost: HttpAdapterHost,
     private readonly configService: ConfigService,
+    @Optional() private readonly httpAdapterHost?: HttpAdapterHost,
   ) {}
 
   async beforeApplicationShutdown(signal?: string): Promise<void> {

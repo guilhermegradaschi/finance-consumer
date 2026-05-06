@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost } from '@nestjs/core';
-import { ShutdownCoordinatorService } from '../shutdown-coordinator.service';
-import { HealthService } from '../../health/health.service';
-import { RabbitMQService } from '../../rabbitmq/rabbitmq.service';
+import { ShutdownCoordinatorService } from '@infra/shutdown/shutdown-coordinator.service';
+import { HealthService } from '@context/platform/infrastructure/health/health.service';
+import { RabbitMQService } from '@infra/messaging/rabbitmq/rabbitmq.service';
 
 describe('ShutdownCoordinatorService', () => {
   let service: ShutdownCoordinatorService;

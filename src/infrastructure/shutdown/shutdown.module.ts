@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { HealthModule } from '../health/health.module';
-import { ShutdownCoordinatorService } from './shutdown-coordinator.service';
+import { PlatformModule } from '@context/platform/platform.module';
+import { ShutdownCoordinatorService } from '@infra/shutdown/shutdown-coordinator.service';
 
 @Module({
-  imports: [HealthModule],
+  imports: [PlatformModule],
   providers: [ShutdownCoordinatorService],
 })
 export class ShutdownModule {}
