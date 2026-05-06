@@ -124,32 +124,41 @@ sequenceDiagram
 
 ## Módulos e Responsabilidades
 
-### Core Modules
+### Bounded contexts (DDD)
 
-| Módulo | Path | Responsabilidade | Status |
+A árvore `src/` está organizada em bounded contexts com camadas internas `domain/application/infrastructure`. Detalhes da decisão e do plano de migração estão em `tasks/refactor-ddd-finance-consumer.md`.
+
+| Contexto | Path | Responsabilidade | Status |
 |--------|------|------------------|--------|
-| **api-gateway** | `src/modules/api-gateway/` | Controllers REST, DTOs, validação de entrada | ✅ Implementado |
-| **nf-receiver** | `src/modules/nf-receiver/` | Recepção, idempotência, enfileiramento | ✅ Implementado |
-| **xml-processor** | `src/modules/xml-processor/` | Parse XML, extração de dados, upload S3 | ✅ Implementado |
-| **business-validator** | `src/modules/business-validator/` | Validação de negócio, consultas externas | ⚠️ Parcial (SEFAZ mock) |
-| **persistence** | `src/modules/persistence/` | Entities, repositories, consumers | ✅ Implementado |
+| **platform** | `src/contexts/platform/` | Auth (JWT, guards), health, throttling, token blacklist | ✅ Implementado |
+| **ingestion** | `src/contexts/ingestion/` | `SubmitIngestionService`, ingest controllers, Qive/IMAP/email/S3 adapters, staging `nfe_ingestions` | ✅ Implementado |
+| **nfe-legacy** | `src/contexts/nfe-legacy/` | Pipeline `NotaFiscal` legado (XML, SEFAZ/ReceitaWS, persistence consumers, NF controllers, audit) | ✅ Implementado |
+| **invoice** | `src/contexts/invoice/` | Domínio `Invoice`/`ExternalInvoice`, processadores e admin reprocess | ✅ Implementado |
+| **invoice-events** | `src/contexts/invoice-events/` | Eventos NFe (cancelamento, CCe), importer/processor | ✅ Implementado |
 
-### Infrastructure Modules
+### Infrastructure (transversal)
 
-| Módulo | Path | Responsabilidade | Status |
-|--------|------|------------------|--------|
-| **database** | `src/infrastructure/database/` | TypeORM config, migrations | ✅ Implementado |
-| **rabbitmq** | `src/infrastructure/rabbitmq/` | Conexão, publicação, consumo | ✅ Implementado |
-| **redis** | `src/infrastructure/redis/` | Cache, idempotência | ✅ Implementado |
-| **s3** | `src/infrastructure/s3/` | Upload/download de XMLs | ✅ Implementado |
-| **observability** | `src/infrastructure/observability/` | Logger, métricas | ⚠️ Incompleto |
+| Path | Responsabilidade | Status |
+|------|------------------|--------|
+| `src/infrastructure/database/` | TypeORM `DataSource` + glob de entities `**/*.entity{.ts,.js}` | ✅ Implementado |
+| `src/infrastructure/messaging/rabbitmq/` | Conexão, publicação e consumo AMQP | ✅ Implementado |
+| `src/infrastructure/messaging/outbox/` | `OutboxMessage` + `OutboxPublisherService` | ✅ Implementado |
+| `src/infrastructure/redis/` | Cache, idempotência | ✅ Implementado |
+| `src/infrastructure/s3/` | Upload/download de XMLs | ✅ Implementado |
+| `src/infrastructure/http/` | Circuit breaker + clients Qive/Buyer/Seller | ✅ Implementado |
+| `src/infrastructure/scheduling/` | `ScheduleModule` wrapper + `NfPipelineCronService` | ✅ Implementado |
+| `src/infrastructure/observability/` | Logger, métricas | ⚠️ Incompleto |
 
-### Stubs (Não Implementados)
+### Shared (`src/shared/`)
 
-| Módulo | Path | Propósito | Status |
-|--------|------|-----------|--------|
-| **email-consumer** | `src/modules/email-consumer/` | Consumir NF-e via IMAP | ❌ Stub vazio |
-| **s3-listener** | `src/modules/s3-listener/` | Reagir a uploads S3/SQS | ❌ Stub vazio |
+Utilitários cross-context: constantes, exceções, filtros, interceptors, middleware, correlation context, pipes, transformers, validation e enums genéricos não pertencentes a um único contexto.
+
+### Stubs (não implementados)
+
+| Local | Propósito | Status |
+|-------|-----------|--------|
+| `src/contexts/ingestion/infrastructure/email-stub/` | Consumir NF-e via IMAP | ❌ Stub vazio |
+| `src/contexts/ingestion/infrastructure/s3-listener/` | Reagir a uploads S3/SQS | ❌ Stub vazio |
 
 ---
 

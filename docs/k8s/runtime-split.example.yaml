@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finance-consumer-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: finance-consumer
+      runtime: api
+  template:
+    metadata:
+      labels:
+        app: finance-consumer
+        runtime: api
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/your-org/finance-consumer:YOUR_TAG
+          args: ["node", "dist/main-api.js"]
+          env:
+            - name: APP_RUNTIME
+              value: "api"
+            - name: NODE_ENV
+              value: "production"
+          ports:
+            - name: http
+              containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finance-consumer-ingestion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finance-consumer
+      runtime: ingestion
+  template:
+    metadata:
+      labels:
+        app: finance-consumer
+        runtime: ingestion
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/your-org/finance-consumer:YOUR_TAG
+          args: ["node", "dist/main-ingestion.js"]
+          env:
+            - name: APP_RUNTIME
+              value: "ingestion"
+            - name: NODE_ENV
+              value: "production"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1024Mi"
+
