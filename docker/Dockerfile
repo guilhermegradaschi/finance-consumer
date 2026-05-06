@@ -3,14 +3,16 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+
 RUN apk add --no-cache python3 make g++
 
-COPY package*.json ./
-RUN npm ci --only=production && cp -R node_modules prod_node_modules
-RUN npm ci
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile --prod && cp -R node_modules prod_node_modules
+RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 # Stage 2: Production
 FROM node:20-alpine AS production
